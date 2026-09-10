@@ -1,9 +1,10 @@
 ---
 id: TASK-007
 title: 'Obras, autores e categorias'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-09-10 01:56'
+updated_date: '2026-09-10 12:05'
 labels:
   - acervo
   - backend
