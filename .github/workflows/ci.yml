@@ -1,0 +1,40 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: marcapagina
+          POSTGRES_PASSWORD: marcapagina
+          POSTGRES_DB: marcapagina
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 2s
+          --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://marcapagina:marcapagina@localhost:5432/marcapagina
+      SESSION_SECRET: ci-secret-nao-usar-em-producao-0123456789abcdef
+      ESCOLA_PADRAO_SLUG: escola-piloto
+      CRON_SECRET: ci-cron-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:unit
+      - run: npx prisma migrate deploy
+      - run: npm run test:integration
+      - run: npm run build
+      # A imagem Docker é a porta de saída da Vercel. Se ela quebrar,
+      # a portabilidade prometida na spec §2.4 deixou de existir em
+      # silêncio — por isso o CI a constrói em toda execução.
+      - run: docker build -t marcapagina:ci .
