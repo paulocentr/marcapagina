@@ -22,14 +22,36 @@ nunca rodou — o workflow está escrito e versionado, mas nenhuma execução fo
 observada. Não existe projeto na Vercel nem banco Neon. Antes de qualquer promessa de
 staging ou produção, é isso que falta.
 
-**Acervo (m-1) em andamento.** O plano está escrito
-(`docs/superpowers/plans/2026-09-10-acervo.md`, 11 tarefas) e as três primeiras estão
-mergeadas em `main`: os dois gates novos, o schema completo do acervo com migration, e
-autores/categorias/localizações.
+**Acervo (m-1) em andamento — 7 das 11 tarefas em `main`.** O plano está em
+`docs/superpowers/plans/2026-09-10-acervo.md`.
 
-**Próximo passo: Tarefa 4 do plano do Acervo — o serviço de Obras.** Depois vêm
-exemplares com tombo sequencial (Tarefa 5) e os provedores de ISBN (Tarefa 6), que são
-o caminho crítico do projeto.
+Feito: os dois gates novos · schema do acervo com migration · autores (dedup por nome
+normalizado), categorias hierárquicas e localizações · serviço de Obras com busca por
+título sem acento · exemplares com tombo sequencial sob trava · provedores de ISBN
+(Google Books + Open Library em cascata) · **catalogação em série atômica** — o caminho
+crítico do projeto está fechado no domínio.
+
+**Próximo passo: Tarefa 8 — as telas do acervo**, com a de catalogação em série
+(cursor volta ao campo de ISBN). Depois: etiquetas PDF (9), inventário (10),
+importador de planilha (11).
+
+Garantias provadas por mutação, não só por teste verde: sem a trava consultiva os
+tombos colidem sob concorrência; sem a transação a catalogação deixa obra órfã de
+exemplar. Se mexer nessas duas, refaça a mutação.
+
+### Transação atravessa as camadas por AsyncLocalStorage
+
+`executarEmTransacao` (em `src/core/db/tenant-extension.ts`) guarda o cliente da
+transação num AsyncLocalStorage, e `dbDoTenant()` o devolve quando há uma em curso. O
+serviço recebe `emTransacao` **injetado** e continua sem saber que banco existe.
+
+Duas armadilhas já pagas, não repita:
+
+- **O cliente de transação do Prisma não aceita `$extends`.** A extensão de tenant tem
+  de ser aplicada **antes** de abrir a transação.
+- **`tenantAtual()` é lido por quem monta o cliente, nunca dentro da operação.** O
+  Prisma adia a execução da query até o `await`, e lá o AsyncLocalStorage do tenant já
+  é outro: ler tarde devolve "fora de contexto" para chamada que estava dentro dele.
 
 ### Decisão 13 — autorização sem HTTP no serviço
 
