@@ -193,6 +193,17 @@ function IconeAjustes(props: PropsDeIcone): ReactElement {
   )
 }
 
+// Chave: "usuários e papéis" é sobre quem tem acesso a quê. Cadeado
+// diria "trancado", que é outra coisa.
+function IconeChave(props: PropsDeIcone): ReactElement {
+  return (
+    <Moldura {...props}>
+      <circle cx="7" cy="7" r="3.4" />
+      <path d="M9.5 9.5l7 7M13.8 13.8l1.6-1.6M16.5 16.5l1.3-1.3" />
+    </Moldura>
+  )
+}
+
 function IconeSair(props: PropsDeIcone): ReactElement {
   return (
     <Moldura {...props}>
@@ -242,6 +253,7 @@ export const ICONES: Record<NomeDeIcone, ComponenteDeIcone> = {
   grafico: IconeGrafico,
   ajustes: IconeAjustes,
   sair: IconeSair,
+  chave: IconeChave,
   impressora: IconeImpressora,
   imagem: IconeImagem,
 }

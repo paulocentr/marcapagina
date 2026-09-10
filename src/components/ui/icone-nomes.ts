@@ -33,6 +33,7 @@ export const NOMES_DE_ICONE = [
   'grafico',
   'ajustes',
   'sair',
+  'chave',
   'impressora',
   'imagem',
 ] as const

@@ -28,17 +28,21 @@ interface ItemDoMenu extends ItemDeNavegacao {
 // ensina a operadora a desconfiar do menu inteiro, e depois disso ela
 // para de explorar o sistema.
 //
-// Atrasados, alunos e turmas, Painel do Leitor e configuração aparecem
-// nas pranchas mas ainda não têm tela: entram aqui quando a rota
-// existir, uma a uma.
+// A ordem segue o dia da biblioteca, não o alfabeto: o que se usa no
+// balcão vem primeiro, o cadastro no meio, e o que se olha uma vez por
+// mês no fim.
+//
+// A permissão de cada item é a que o SERVIÇO daquela tela exige — não
+// uma parecida. Item que aparece e leva a uma recusa é a mesma mentira
+// de item que leva a 404.
+//
+// Ainda sem tela, e por isso fora daqui: criar escola (só SUPER_ADMIN,
+// e não há usuário nele) e o painel do professor.
 const MENU: ItemDoMenu[] = [
   { titulo: 'Painel', href: '/painel', icone: 'painel', permissao: null },
-  {
-    titulo: 'Balcão',
-    href: '/painel/balcao',
-    icone: 'troca',
-    permissao: 'emprestimo:criar',
-  },
+  { titulo: 'Balcão', href: '/painel/balcao', icone: 'troca', permissao: 'emprestimo:criar' },
+  { titulo: 'Atrasados', href: '/painel/atrasados', icone: 'relogio', permissao: 'relatorio:ver' },
+  { titulo: 'Reservas', href: '/painel/reservas', icone: 'fita', permissao: 'reserva:gerenciar' },
   { titulo: 'Acervo', href: '/painel/acervo', icone: 'livros', permissao: 'obra:ver' },
   {
     titulo: 'Catalogar por ISBN',
@@ -47,10 +51,10 @@ const MENU: ItemDoMenu[] = [
     permissao: 'obra:criar',
   },
   {
-    titulo: 'Reservas',
-    href: '/painel/reservas',
-    icone: 'fita',
-    permissao: 'reserva:gerenciar',
+    titulo: 'Inventário',
+    href: '/painel/inventario',
+    icone: 'check',
+    permissao: 'inventario:executar',
   },
   {
     titulo: 'Carrinho da Leitura',
@@ -58,7 +62,33 @@ const MENU: ItemDoMenu[] = [
     icone: 'carrinho',
     permissao: 'carrinho:gerenciar',
   },
+  { titulo: 'Alunos e turmas', href: '/painel/alunos', icone: 'pessoas', permissao: 'aluno:ver' },
+  {
+    titulo: 'Importar planilha',
+    href: '/painel/importacao',
+    icone: 'mais',
+    permissao: 'aluno:importar',
+  },
+  {
+    titulo: 'Painel do Leitor',
+    href: '/painel/relatorios',
+    icone: 'grafico',
+    permissao: 'relatorio:ver',
+  },
+  {
+    titulo: 'Usuários e papéis',
+    href: '/painel/usuarios',
+    icone: 'chave',
+    permissao: 'usuario:gerenciar',
+  },
+  {
+    titulo: 'Configuração',
+    href: '/painel/configuracao',
+    icone: 'ajustes',
+    permissao: 'config:editar',
+  },
 ]
+
 
 export default async function LayoutDoPainel({
   children,

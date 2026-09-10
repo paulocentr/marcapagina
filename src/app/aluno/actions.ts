@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { ErroDeDominio } from '@/core/errors'
-import { comAlunoNoTenant } from '@/modules/portal/contexto-do-aluno'
+import { comAlunoNoTenant } from '@/core/auth/contexto-de-requisicao'
 import { dependenciasDoPortal } from '@/modules/portal/portal.deps'
 import { renovarMeuLivro } from '@/modules/portal/minha-renovacao.service'
 import { formatarDia } from './formato'

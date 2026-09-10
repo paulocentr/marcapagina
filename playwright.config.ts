@@ -6,6 +6,26 @@ export default defineConfig({
   // o Playwright não tentar executá-lo como suíte.
   testMatch: '**/*.spec.ts',
   globalSetup: './tests/e2e/semear.ts',
+  // UM worker, e isto é medição e não superstição.
+  //
+  // `limparAcervo` (tests/e2e/apoio.ts) dá TRUNCATE no acervo no
+  // `beforeEach` do acervo.spec, e os workers compartilham UM banco. Com
+  // dois, o TRUNCATE de um apaga a obra que o outro acabou de catalogar,
+  // e o teste "acrescentar exemplares não cria uma segunda ficha" acha 0
+  // resultados na busca. Medido nesta árvore, repetidamente:
+  //
+  //   --workers=1  ->  17 passed (35,0s)
+  //   --workers=2  ->  1 failed | 16 passed (33,5s)
+  //
+  // O paralelismo comprava 1,5s de 35, porque o tempo é dominado pela
+  // build. Um teste que reprova por causa do vizinho é pior que um teste
+  // lento: ensina a reexecutar até passar, e aí um vermelho de verdade
+  // passa batido.
+  //
+  // Se a suíte crescer ao ponto de o serial doer, a saída NÃO é voltar a
+  // subir workers: é dar um banco por worker
+  // (`DATABASE_URL` + índice do worker) e migrar cada um.
+  workers: 1,
   use: { baseURL: 'http://localhost:3000' },
   webServer: {
     // Roda contra a build de produção: é o que vai para a Vercel, e
