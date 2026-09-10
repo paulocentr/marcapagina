@@ -42,12 +42,14 @@ function aguardando(parcial: Partial<ReservaVivaBruta> & { reservaId: string }):
 function separada(
   parcial: Omit<Partial<ReservaVivaBruta>, 'retirarAte'> & {
     reservaId: string
+    /** ISO do dia. Vira `Date` aqui, para o teste não escrever fuso. */
     retirarAte: string
   },
 ): ReservaVivaBruta {
-  const { retirarAte: _prazo, ...semPrazo } = parcial
   return {
-    ...aguardando(semPrazo),
+    // `retirarAte` fica de fora do que vai a `aguardando` porque ali ele é
+    // `Date | null` e aqui é string do dia.
+    ...aguardando({ ...parcial, retirarAte: undefined }),
     status: 'DISPONIVEL',
     tomboSeparado: parcial.tomboSeparado ?? '000412',
     retirarAte: dia(parcial.retirarAte),
