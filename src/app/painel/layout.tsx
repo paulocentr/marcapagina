@@ -28,9 +28,9 @@ interface ItemDoMenu extends ItemDeNavegacao {
 // ensina a operadora a desconfiar do menu inteiro, e depois disso ela
 // para de explorar o sistema.
 //
-// Reservas, atrasados, alunos e turmas, Painel do Leitor e configuração
-// aparecem nas pranchas mas ainda não têm tela: entram aqui quando a
-// rota existir, uma a uma.
+// Atrasados, alunos e turmas, Painel do Leitor e configuração aparecem
+// nas pranchas mas ainda não têm tela: entram aqui quando a rota
+// existir, uma a uma.
 const MENU: ItemDoMenu[] = [
   { titulo: 'Painel', href: '/painel', icone: 'painel', permissao: null },
   {
@@ -45,6 +45,12 @@ const MENU: ItemDoMenu[] = [
     href: '/painel/acervo/novo',
     icone: 'codigo-de-barras',
     permissao: 'obra:criar',
+  },
+  {
+    titulo: 'Reservas',
+    href: '/painel/reservas',
+    icone: 'fita',
+    permissao: 'reserva:gerenciar',
   },
   {
     titulo: 'Carrinho da Leitura',
