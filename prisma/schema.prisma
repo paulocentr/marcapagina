@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Tenant ────────────────────────────────────────────────────────────
+// Escola é a raiz do tenant. É o ÚNICO modelo de negócio sem escolaId,
+// porque ela É o escolaId de todo o resto.
+model Escola {
+  id       String   @id @default(cuid())
+  slug     String   @unique // resolve o tenant pelo subdomínio
+  nome     String
+  ativa    Boolean  @default(true)
+  criadaEm DateTime @default(now())
+
+  usuarios      Usuario[]
+  papeis        Papel[]
+  alunos        Aluno[]
+  turmas        Turma[]
+  anosLetivos   AnoLetivo[]
+  logsAuditoria LogAuditoria[]
+}
+
+// ─── Acesso ────────────────────────────────────────────────────────────
+model Usuario {
+  id        String   @id @default(cuid())
+  escolaId  String
+  nome      String
+  email     String
+  senhaHash String
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
+
+  escola Escola         @relation(fields: [escolaId], references: [id])
+  papeis UsuarioPapel[]
+
+  @@unique([escolaId, email])
+  @@index([escolaId])
+}
+
+model Papel {
+  id        String @id @default(cuid())
+  escolaId  String
+  nome      String
+  descricao String?
+  // Permissões como String[]: o catálogo vive em código (fonte da
+  // verdade, tipado), o banco guarda só a atribuição. Uma tabela de
+  // permissões seria uma segunda fonte da verdade que sai de sincronia
+  // com o código na primeira refatoração.
+  permissoes String[]
+  deSistema  Boolean  @default(false) // papel de fábrica: não pode ser excluído
+  criadoEm   DateTime @default(now())
+
+  escola   Escola         @relation(fields: [escolaId], references: [id])
+  usuarios UsuarioPapel[]
+
+  @@unique([escolaId, nome])
+  @@index([escolaId])
+}
+
+model UsuarioPapel {
+  usuarioId String
+  papelId   String
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  papel   Papel   @relation(fields: [papelId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, papelId])
+}
+
+// ─── Leitores (mínimo necessário para autenticar; completa no plano 4) ──
+model AnoLetivo {
+  id         String   @id @default(cuid())
+  escolaId   String
+  ano        Int
+  dataInicio DateTime
+  dataFim    DateTime
+  ativo      Boolean  @default(false)
+
+  escola Escola  @relation(fields: [escolaId], references: [id])
+  turmas Turma[]
+
+  @@unique([escolaId, ano])
+  @@index([escolaId])
+}
+
+model Turma {
+  id          String @id @default(cuid())
+  escolaId    String
+  anoLetivoId String
+  nome        String // "5º A"
+  serie       String // "5" | "1EM" — usado no override de circulação por série
+  turno       String
+
+  escola    Escola    @relation(fields: [escolaId], references: [id])
+  anoLetivo AnoLetivo @relation(fields: [anoLetivoId], references: [id])
+  alunos    Aluno[]
+
+  @@unique([escolaId, anoLetivoId, nome])
+  @@index([escolaId])
+}
+
+model Aluno {
+  id                  String   @id @default(cuid())
+  escolaId            String
+  matricula           String
+  nome                String
+  dataNascimento      DateTime @db.Date
+  turmaId             String?
+  responsavelNome     String?
+  responsavelEmail    String?
+  responsavelTelefone String?
+  ativo               Boolean  @default(true)
+  criadoEm            DateTime @default(now())
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+  turma  Turma? @relation(fields: [turmaId], references: [id])
+
+  @@unique([escolaId, matricula])
+  @@index([escolaId])
+}
+
+// ─── Segurança e auditoria ─────────────────────────────────────────────
+// Rate limit em banco, não em Redis: o free tier não tem Redis, e o
+// volume de uma biblioteca escolar cabe folgadamente numa tabela com
+// índice. Uma dependência a menos para operar.
+model TentativaLogin {
+  id            String   @id @default(cuid())
+  escolaId      String? // nulo quando o tenant nem chegou a ser resolvido
+  identificador String // e-mail (staff) ou matrícula (aluno)
+  reino         String // "STAFF" | "ALUNO"
+  ip            String
+  sucesso       Boolean
+  ocorridaEm    DateTime @default(now())
+
+  @@index([identificador, reino, ocorridaEm])
+  @@index([ip, ocorridaEm])
+}
+
+model LogAuditoria {
+  id          String   @id @default(cuid())
+  escolaId    String
+  autorTipo   String // "STAFF" | "ALUNO" | "SISTEMA"
+  autorId     String?
+  autorNome   String
+  acao        String // "emprestimo.forcar", "usuario.papel.alterar"
+  entidade    String
+  entidadeId  String?
+  dadosAntes  Json?
+  dadosDepois Json?
+  ip          String?
+  ocorridaEm  DateTime @default(now())
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+
+  @@index([escolaId, ocorridaEm])
+  @@index([escolaId, entidade, entidadeId])
+}
