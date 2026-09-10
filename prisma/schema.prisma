@@ -23,6 +23,11 @@ model Escola {
   turmas        Turma[]
   anosLetivos   AnoLetivo[]
   logsAuditoria LogAuditoria[]
+  categorias    Categoria[]
+  localizacoes  Localizacao[]
+  autores       Autor[]
+  obras         Obra[]
+  exemplares    Exemplar[]
 }
 
 // ─── Acesso ────────────────────────────────────────────────────────────
@@ -159,4 +164,146 @@ model LogAuditoria {
 
   @@index([escolaId, ocorridaEm])
   @@index([escolaId, entidade, entidadeId])
+}
+
+// ─── Acervo (spec §4.2) ────────────────────────────────────────────────
+enum EstadoDeConservacao {
+  NOVO
+  BOM
+  DESGASTADO
+  DANIFICADO
+}
+
+enum SituacaoDoExemplar {
+  DISPONIVEL
+  EMPRESTADO
+  RESERVADO
+  EM_CARRINHO
+  EM_MANUTENCAO
+  EXTRAVIADO
+  BAIXADO
+}
+
+enum OrigemDoExemplar {
+  COMPRA
+  DOACAO
+  GOVERNO
+}
+
+model Categoria {
+  id       String  @id @default(cuid())
+  escolaId String
+  nome     String
+  cor      String?
+  parentId String?
+
+  escola Escola      @relation(fields: [escolaId], references: [id])
+  parent Categoria?  @relation("Hierarquia", fields: [parentId], references: [id])
+  filhas Categoria[] @relation("Hierarquia")
+  obras  Obra[]
+
+  @@unique([escolaId, nome, parentId])
+  @@index([escolaId])
+}
+
+model Localizacao {
+  id         String  @id @default(cuid())
+  escolaId   String
+  nome       String
+  corredor   String?
+  estante    String?
+  prateleira String?
+
+  escola     Escola     @relation(fields: [escolaId], references: [id])
+  exemplares Exemplar[]
+
+  @@unique([escolaId, nome])
+  @@index([escolaId])
+}
+
+model Autor {
+  id       String @id @default(cuid())
+  escolaId String
+  nome     String
+  // Nome normalizado (minúsculas, sem acento) para deduplicar: "Clarice
+  // Lispector" e "clarice lispector" são a MESMA pessoa, e sem isso o
+  // relatório de autor mais lido conta a mesma autora duas vezes.
+  nomeNormalizado String
+
+  escola Escola      @relation(fields: [escolaId], references: [id])
+  obras  ObraAutor[]
+
+  @@unique([escolaId, nomeNormalizado])
+  @@index([escolaId])
+}
+
+model Obra {
+  id              String   @id @default(cuid())
+  escolaId        String
+  titulo          String
+  // Título normalizado para busca insensível a acento e caixa. Coluna em
+  // vez da extensão unaccent: uma extensão a menos é uma dependência a
+  // menos entre o Neon de hoje e o Postgres de amanhã (spec §2.4).
+  tituloNormalizado String
+  subtitulo       String?
+  editora         String?
+  anoPublicacao   Int?
+  isbn            String?
+  edicao          String?
+  idioma          String?
+  numeroDePaginas Int?
+  sinopse         String?
+  // SEMPRE URL externa. Binário no banco não entra: o free tier do Neon
+  // são 0,5 GB e capa de livro é o jeito mais rápido de gastá-los.
+  capaUrl     String?
+  cdd         String?
+  faixaEtaria String?
+  categoriaId String?
+  criadaEm    DateTime @default(now())
+
+  escola     Escola      @relation(fields: [escolaId], references: [id])
+  categoria  Categoria?  @relation(fields: [categoriaId], references: [id])
+  autores    ObraAutor[]
+  exemplares Exemplar[]
+
+  @@index([escolaId])
+  @@index([escolaId, isbn])
+  @@index([escolaId, tituloNormalizado])
+}
+
+model ObraAutor {
+  obraId  String
+  autorId String
+  ordem   Int    @default(0)
+
+  obra  Obra  @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  autor Autor @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@id([obraId, autorId])
+}
+
+model Exemplar {
+  id               String              @id @default(cuid())
+  escolaId         String
+  obraId           String
+  tombo            String
+  estado           EstadoDeConservacao @default(BOM)
+  situacao         SituacaoDoExemplar  @default(DISPONIVEL)
+  localizacaoId    String?
+  dataDeAquisicao  DateTime?
+  origem           OrigemDoExemplar    @default(COMPRA)
+  valorDeAquisicao Decimal?            @db.Decimal(10, 2)
+  observacao       String?
+  criadoEm         DateTime            @default(now())
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+  // Restrict, não Cascade: excluir obra que tem exemplar tem que ser
+  // recusado. Cascade transformaria um clique errado em acervo apagado.
+  obra        Obra         @relation(fields: [obraId], references: [id], onDelete: Restrict)
+  localizacao Localizacao? @relation(fields: [localizacaoId], references: [id])
+
+  @@unique([escolaId, tombo])
+  @@index([escolaId])
+  @@index([escolaId, obraId])
+  @@index([escolaId, situacao])
 }

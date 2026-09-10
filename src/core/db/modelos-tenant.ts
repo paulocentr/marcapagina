@@ -12,6 +12,11 @@ export const MODELOS_ESCOPADOS_POR_TENANT = new Set<string>([
   'Turma',
   'AnoLetivo',
   'LogAuditoria',
+  'Categoria',
+  'Localizacao',
+  'Autor',
+  'Obra',
+  'Exemplar',
 ])
 
 export const MODELOS_FORA_DO_TENANT = new Set<string>([
