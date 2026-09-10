@@ -8,6 +8,11 @@ export const runtime = 'nodejs'
 // uma API proprietária da Vercel. O Vercel Cron aciona hoje; amanhã pode
 // ser cron do sistema, GitHub Actions ou qualquer agendador, sem tocar
 // no código.
+//
+// Estar nesta lista faz o job ser ACEITO, não faz ele ser CHAMADO. Quem
+// chama é o agendador, e o horário de cada um está em `vercel.json`.
+// Acrescentar aqui e esquecer lá deixa o job pronto e nunca executado —
+// que é a falha silenciosa mais fácil de cometer neste arquivo.
 const JOBS_CONHECIDOS = new Set(['backup-semanal', 'expirar-reservas'])
 
 // Comparar segredo com === vaza, pelo tempo de resposta, quantos bytes
