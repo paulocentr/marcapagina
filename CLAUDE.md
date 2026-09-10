@@ -10,38 +10,79 @@ acoplado ao código)
 
 ## ESTADO ATUAL (2026-09-10)
 
-**A Fundação está implementada e mergeada em `main`.** As 13 tarefas do plano m-0
-foram executadas em TDD, cada uma com o teste falhando antes da implementação.
+**Fundação (m-0), Acervo (m-1) e Circulação (m-2) estão completos e em `main`.**
 
-Verificação final do plano — os sete comandos, exit code conferido um a um:
-`lint` · `typecheck` · `test:unit` (88) · `test:integration` (33) · `test:e2e` (5) ·
-`build` · `docker build`. Todos com exit 0, em máquina local com Postgres em Docker.
+Gate completo medido na árvore de `90d9b06`, exit code conferido um a um, em
+máquina local com Postgres em Docker:
 
-**Nada foi implantado.** Não há remote no repositório, então o CI do GitHub Actions
-nunca rodou — o workflow está escrito e versionado, mas nenhuma execução foi
-observada. Não existe projeto na Vercel nem banco Neon. Antes de qualquer promessa de
-staging ou produção, é isso que falta.
+| gate | resultado |
+|---|---|
+| `lint` | exit 0 |
+| `typecheck` | exit 0 |
+| `test:unit` | 37 arquivos, **810 testes** |
+| `test:integration` | 23 arquivos, **201 testes** |
+| `test:e2e` | **17 testes** |
+| `build` | exit 0 |
+| `docker build` | exit 0 |
 
-**Acervo (m-1) COMPLETO — as 11 tarefas em `main`**
-(`docs/superpowers/plans/2026-09-10-acervo.md`).
+**Nada foi implantado, e isso não mudou.** Não há remote no repositório, então o
+CI do GitHub Actions **nunca executou uma vez** — o workflow está escrito e
+versionado, e nenhuma execução foi observada. Não existe projeto na Vercel nem
+banco Neon. Card: TASK-031.
 
-Schema do acervo · autores (dedup por nome normalizado), categorias e localizações ·
-Obras com busca por título sem acento · exemplares com tombo sequencial sob trava ·
-ISBN via Google Books + Open Library em cascata · catalogação em série atômica, com a
-tela em que o cursor volta ao campo de ISBN · etiquetas A4 em PDF · inventário com as
-três listas · importador de planilha (alunos como uso primário).
+**Circulação (m-2) COMPLETA — as 10 tarefas**
+(`docs/superpowers/plans/2026-09-10-circulacao.md`).
 
-**Circulação (m-2) em andamento** (`docs/superpowers/plans/2026-09-10-circulacao.md`,
-10 tarefas). Em `main`: schema completo com os dois índices únicos parciais, e a
-**camada de regras puras** — configuração por série, cálculo de prazo, bloqueios do
-leitor e penalidade. Nenhuma delas toca banco, e é isso que permite provar o balcão
-inteiro numa suíte de milissegundos.
+Schema com os dois índices únicos parciais · camada de regras puras
+(configuração por série, prazo, bloqueios, penalidade) · consulta de atrasados ·
+empréstimo no balcão com liberação forçada auditada · devolução com penalidade e
+avanço da fila · reservas e renovação · job de expiração de reserva, agendado no
+`vercel.json` · tela do balcão · Carrinho da Leitura.
 
-**Próximo passo: Tarefa 2 (consulta de atrasados) e Tarefa 5 (serviço de empréstimo).**
-Depois: devolução com avanço da fila (6), reservas e renovação (7), cron (8), tela do
-balcão (9), Carrinho da Leitura (10).
+**O que a Circulação NÃO entrega, apesar de "completa":** reserva, renovação,
+atrasados e Carrinho **não têm tela**. A regra existe e está provada; a
+coordenação ainda não alcança nenhum deles pela interface. Cards TASK-030 e
+TASK-032. Não confunda "tarefa mergeada" com "a usuária consegue usar".
 
-### Duas coisas da circulação que é fácil desfazer sem perceber
+### Sistema de design — APROVADO, e é a linha a seguir
+
+O Paulo aprovou o kit em 2026-09-10 ("o design esta aprovado siga esse UI kit e
+linha"). Pranchas em `docs/design/*.dc.html`; canvas publicado em
+https://claude.ai/code/artifact/975c7374-b76e-4da0-84d6-1f651070e0f5
+
+Antes disso o projeto **não tinha design system**: `globals.css` e `layout.tsx`
+eram o boilerplate do `create-next-app`. Agora:
+
+- paleta no bloco `@theme` do Tailwind v4 (`papel`, `tinta`, `marca`, `fita`,
+  `atencao`, `alerta`, `certo`), para os utilitários existirem em vez de hex no JSX
+- três famílias com trabalho definido: **Literata** nos títulos, **IBM Plex
+  Sans** na interface, **IBM Plex Mono** em tombo, ISBN e matrícula **sempre** —
+  é assim que a operadora confere dígito a dígito contra a etiqueta
+- primitivos em `src/components/ui/`, casca do painel em `src/app/painel/layout.tsx`
+
+**Duas regras do kit que o código torna difíceis de furar:**
+
+- **`Chip` não aceita cor, ícone nem texto livre** — só a chave de um estado do
+  catálogo (`src/components/ui/estados.ts`), e o tipo cobra `palavra` **e**
+  `icone`. Não existe caminho para um chip que diga o estado só pela cor, porque
+  o balcão é operado sob pressa e às vezes em tela com brilho ruim.
+- **Só entram atalhos para telas que EXISTEM.** Um item de menu que leva a 404
+  ensina a operadora a desconfiar do menu inteiro, e depois disso ela para de
+  explorar o sistema.
+
+As telas existentes **ainda não foram reescritas** contra o kit (TASK-029): elas
+seguem com utilitários neutros de antes.
+
+### A casca do painel não é fronteira de segurança
+
+`src/app/painel/layout.tsx` valida a sessão, e isso é conveniência: tela nova
+nasce protegida. Mas **layout em Next não é fronteira** — ele não volta a rodar
+em navegação de cliente entre telas irmãs, e Server Action nenhuma passa por
+ele. Por isso `painel/page.tsx` e cada action continuam validando por conta.
+O filtro do menu por permissão existe para o menu não mentir; **quem autoriza é
+o serviço**.
+
+### Três coisas que é fácil desfazer sem perceber
 
 - **Não existe campo "atrasado".** É sempre `previstaPara < hoje AND devolvidaEm IS
   NULL`. Um campo materializado mente todo dia em que o cron falhar — e mente na
@@ -51,10 +92,22 @@ balcão (9), Carrinho da Leitura (10).
   (São Paulo) e no servidor (UTC na Vercel). A suíte de prazo roda idêntica em três
   fusos; se mexer, rode `TZ=UTC` e `TZ=Asia/Tokyo` também.
 
+- **`/sair` é POST, e NÃO existe `GET` nele.** Esta custou horas e o sintoma não
+  aponta para a causa. O App Router **prefetcha** todo `<Link>` que entra na
+  viewport, disparando um GET no `href` sem ninguém clicar. Enquanto `/sair`
+  aceitava GET, um `<Link href="/sair">` na tela do painel **apagava o cookie de
+  sessão só por a tela ter renderizado** — a página renderizava bem, a sessão
+  morria em silêncio, e a recusa aparecia na Server Action seguinte, longe da
+  causa. Como o prefetch é agendado por ociosidade, o conjunto de testes que
+  falhava mudava a cada rodada, e dirigido à mão funcionava. Dois gates travam
+  isso hoje (`<Link>` para Route Handler, e `/sair` sem GET). Se for pôr tela de
+  confirmação, ela é uma `page.tsx` com form POST, nunca um GET que já desloga.
+
 ### Garantias provadas por MUTAÇÃO — se mexer nelas, refaça a mutação
 
-Não basta o teste estar verde; estes quatro foram verificados removendo a proteção e
-confirmando que o teste reprova:
+Não basta o teste estar verde; cada linha abaixo foi verificada removendo a proteção
+e confirmando que o teste reprova. Se mexer numa delas, refaça a mutação — é o que
+distingue "o teste passa" de "a proteção funciona":
 
 | Proteção | Sem ela |
 |---|---|
@@ -63,6 +116,9 @@ confirmando que o teste reprova:
 | Transação na importação | importação parcial grava os alunos |
 | `drawText` do tombo | a etiqueta sai em branco |
 | Índice único parcial de empréstimo ativo | o mesmo exemplar é emprestado duas vezes |
+| `palavra` e `icone` obrigatórios no estado do chip | chip diz o estado só pela cor |
+| `/sair` sem `GET` | prefetch, `<img src>` ou crawler deslogam a operadora |
+| Gate do `<Link>` ignorando comentário | o gate acusa a própria prosa, e alguém o desliga |
 
 ### Duas escolhas de dependência que divergem do plano, de propósito
 
@@ -130,11 +186,15 @@ Cada uma está no corpo do commit que a introduziu, com o motivo:
 | Documento | Papel |
 |---|---|
 | `docs/superpowers/specs/2026-09-09-biblioteca-escolar-design.md` | Spec arquitetural. Fonte da verdade de produto e de arquitetura. Leia antes de qualquer decisão. |
-| `docs/superpowers/plans/2026-09-09-fundacao.md` | Plano da Fundação: 13 tarefas, 92 passos TDD com código real. É o que se executa agora. |
+| `docs/superpowers/plans/2026-09-09-fundacao.md` | Plano da Fundação (m-0): 13 tarefas. **Executado.** |
+| `docs/superpowers/plans/2026-09-10-acervo.md` | Plano do Acervo (m-1): 11 tarefas. **Executado.** |
+| `docs/superpowers/plans/2026-09-10-circulacao.md` | Plano da Circulação (m-2): 10 tarefas. **Executado.** |
+| `docs/design/*.dc.html` | Pranchas do sistema de design, **aprovadas**. Material de referência para as telas: leia antes de escrever tela. |
 
-Os planos dos outros quatro milestones **ainda não foram escritos**, de propósito:
-cada um é escrito no início da sua fase, porque escrevê-los antes seria adivinhar
-assinaturas que as fases anteriores ainda vão definir.
+**Os planos de m-3 (Leitores & Portal) e m-4 (Relatórios & Engajamento) ainda não
+foram escritos, de propósito:** cada um é escrito no início da sua fase, porque
+escrevê-los antes seria adivinhar assinaturas que as fases anteriores ainda vão
+definir.
 
 ---
 
@@ -168,6 +228,11 @@ deploy: skill `backlog-flow` e `~/.claude/CLAUDE.md`.
 **Aberto em `Needs Paulo`:** TASK-025 — base legal LGPD e aviso aos responsáveis.
 Não bloqueia implementação; é decisão institucional da escola, a ser resolvida antes
 de o primeiro aluno real ser cadastrado em produção.
+
+**O que está em `To Do` e importa mais:** TASK-029 (reescrever as telas contra o kit
+aprovado), TASK-030 e TASK-032 (telas do Carrinho e de reservas, cuja regra já está
+pronta e inalcançável), TASK-031 (publicar — não há remote, o CI nunca rodou) e
+TASK-019 (alunos e turmas, que m-3 inteiro depende).
 
 ---
 
