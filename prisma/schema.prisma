@@ -30,6 +30,12 @@ model Escola {
   exemplares    Exemplar[]
   inventarios   Inventario[]
   itensDeInventario InventarioItem[]
+  configuracaoDeCirculacao ConfiguracaoDeCirculacao?
+  configuracoesPorSerie    ConfiguracaoPorSerie[]
+  diasNaoLetivos           DiaNaoLetivo[]
+  emprestimos              Emprestimo[]
+  reservas                 Reserva[]
+  penalidades              Penalidade[]
 }
 
 // ─── Acesso ────────────────────────────────────────────────────────────
@@ -124,8 +130,11 @@ model Aluno {
   ativo               Boolean  @default(true)
   criadoEm            DateTime @default(now())
 
-  escola Escola @relation(fields: [escolaId], references: [id])
-  turma  Turma? @relation(fields: [turmaId], references: [id])
+  escola      Escola       @relation(fields: [escolaId], references: [id])
+  turma       Turma?       @relation(fields: [turmaId], references: [id])
+  emprestimos Emprestimo[]
+  reservas    Reserva[]
+  penalidades Penalidade[]
 
   @@unique([escolaId, matricula])
   @@index([escolaId])
@@ -268,6 +277,7 @@ model Obra {
   categoria  Categoria?  @relation(fields: [categoriaId], references: [id])
   autores    ObraAutor[]
   exemplares Exemplar[]
+  reservas   Reserva[]
 
   @@index([escolaId])
   @@index([escolaId, isbn])
@@ -305,6 +315,8 @@ model Exemplar {
   obra        Obra         @relation(fields: [obraId], references: [id], onDelete: Restrict)
   localizacao Localizacao? @relation(fields: [localizacaoId], references: [id])
   itensDeInventario InventarioItem[]
+  emprestimos       Emprestimo[]
+  reservas          Reserva[]
 
   @@unique([escolaId, tombo])
   @@index([escolaId])
@@ -366,4 +378,154 @@ model InventarioItem {
   @@unique([inventarioId, exemplarId])
   @@index([escolaId])
   @@index([inventarioId, conferido])
+}
+
+// ─── Circulação (spec §4.3, §4.8) ──────────────────────────────────────
+enum StatusDoEmprestimo {
+  ATIVO
+  DEVOLVIDO
+  PERDIDO
+}
+
+enum StatusDaReserva {
+  AGUARDANDO
+  DISPONIVEL
+  ATENDIDA
+  EXPIRADA
+  CANCELADA
+}
+
+enum TipoDePenalidade {
+  SUSPENSAO
+}
+
+model ConfiguracaoDeCirculacao {
+  id       String @id @default(cuid())
+  escolaId String @unique
+
+  prazoEmDias                Int
+  limiteSimultaneo           Int
+  maximoDeRenovacoes         Int
+  diasDeSuspensaoPorDiaDeAtraso Int @default(1)
+  prazoDeRetiradaEmDias      Int @default(2)
+  alunoPodeReservar          Boolean @default(true)
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+}
+
+// Override POR SÉRIE. A escola vai do 1º ano do Fundamental ao 3º do
+// Médio: um valor único estaria errado nas duas pontas ao mesmo tempo.
+// Todo campo é opcional porque o override vale campo a campo — a série
+// pode sobrescrever só o limite e herdar o resto.
+model ConfiguracaoPorSerie {
+  id       String @id @default(cuid())
+  escolaId String
+  serie    String
+
+  prazoEmDias                   Int?
+  limiteSimultaneo              Int?
+  maximoDeRenovacoes            Int?
+  diasDeSuspensaoPorDiaDeAtraso Int?
+  prazoDeRetiradaEmDias         Int?
+  alunoPodeReservar             Boolean?
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+
+  @@unique([escolaId, serie])
+  @@index([escolaId])
+}
+
+model DiaNaoLetivo {
+  id       String   @id @default(cuid())
+  escolaId String
+  data     DateTime @db.Date
+  motivo   String
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+
+  // Feriado municipal não é o mesmo em toda cidade: a unicidade é POR
+  // ESCOLA, nunca global.
+  @@unique([escolaId, data])
+  @@index([escolaId, data])
+}
+
+model Emprestimo {
+  id         String @id @default(cuid())
+  escolaId   String
+  exemplarId String
+  // Aluno OU usuário: staff também pega livro emprestado.
+  alunoId   String?
+  usuarioId String?
+
+  retiradaEm   DateTime  @default(now())
+  previstaPara DateTime  @db.Date
+  // NÃO existe campo "atrasado" (Global Constraint 16). Ele é sempre
+  // calculado: previstaPara < hoje AND devolvidaEm IS NULL. Um campo
+  // materializado mente todo dia em que o cron falhar, e mente na direção
+  // pior — dizendo que está tudo em ordem.
+  devolvidaEm DateTime?
+
+  renovacoes          Int                  @default(0)
+  operadorRetiradaId  String
+  operadorDevolucaoId String?
+  estadoNaDevolucao   EstadoDeConservacao?
+  observacao          String?
+
+  liberacaoForcada         Boolean @default(false)
+  justificativaDaLiberacao String?
+
+  escola      Escola       @relation(fields: [escolaId], references: [id])
+  exemplar    Exemplar     @relation(fields: [exemplarId], references: [id], onDelete: Restrict)
+  aluno       Aluno?       @relation(fields: [alunoId], references: [id])
+  penalidades Penalidade[]
+
+  // Sustenta a consulta de atrasados, que roda no painel do dia.
+  @@index([escolaId, devolvidaEm, previstaPara])
+  @@index([escolaId, alunoId, devolvidaEm])
+  @@index([escolaId, exemplarId])
+}
+
+model Reserva {
+  id       String @id @default(cuid())
+  escolaId String
+  // A reserva é da OBRA, não do exemplar: o aluno quer o livro, e
+  // qualquer cópia serve. Reservar exemplar específico faria a fila parar
+  // porque justamente aquela cópia está com alguém.
+  obraId  String
+  alunoId String
+
+  criadaEm            DateTime        @default(now())
+  status              StatusDaReserva @default(AGUARDANDO)
+  posicao             Int
+  exemplarSeparadoId  String?
+  retirarAte          DateTime?
+
+  escola   Escola    @relation(fields: [escolaId], references: [id])
+  obra     Obra      @relation(fields: [obraId], references: [id], onDelete: Restrict)
+  aluno    Aluno     @relation(fields: [alunoId], references: [id])
+  exemplar Exemplar? @relation(fields: [exemplarSeparadoId], references: [id])
+
+  @@index([escolaId])
+  @@index([escolaId, obraId, status, posicao])
+  @@index([escolaId, status, retirarAte])
+}
+
+model Penalidade {
+  id       String           @id @default(cuid())
+  escolaId String
+  alunoId  String
+  tipo     TipoDePenalidade @default(SUSPENSAO)
+  inicio   DateTime         @db.Date
+  fim      DateTime         @db.Date
+  motivo   String
+  // Sem a origem, a suspensão vira um castigo sem história e ninguém
+  // consegue explicar ao responsável de onde ela veio.
+  emprestimoOrigemId String?
+
+  escola           Escola      @relation(fields: [escolaId], references: [id])
+  aluno            Aluno       @relation(fields: [alunoId], references: [id])
+  emprestimoOrigem Emprestimo? @relation(fields: [emprestimoOrigemId], references: [id])
+
+  @@index([escolaId])
+  @@index([escolaId, alunoId, fim])
 }
