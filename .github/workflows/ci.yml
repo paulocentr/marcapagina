@@ -23,8 +23,8 @@ jobs:
       ESCOLA_PADRAO_SLUG: escola-piloto
       CRON_SECRET: ci-cron-secret
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npx prisma generate
@@ -34,6 +34,15 @@ jobs:
       - run: npx prisma migrate deploy
       - run: npm run test:integration
       - run: npm run build
+      # O E2E é o único gate que exercita a build de produção com navegador,
+      # e foi ele que pegou o prefetch de /sair apagando a sessão — um bug
+      # que lint, typecheck e teste de unidade não veriam nunca. Deixá-lo
+      # fora do CI era manter a rede de segurança no chão.
+      #
+      # `--with-deps chromium`: só o navegador que o playwright.config usa.
+      # Baixar os três custaria minutos por execução para nada.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
       # A imagem Docker é a porta de saída da Vercel. Se ela quebrar,
       # a portabilidade prometida na spec §2.4 deixou de existir em
       # silêncio — por isso o CI a constrói em toda execução.
