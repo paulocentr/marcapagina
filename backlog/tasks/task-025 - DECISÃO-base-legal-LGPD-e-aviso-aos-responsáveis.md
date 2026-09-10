@@ -1,9 +1,10 @@
 ---
 id: TASK-025
 title: 'DECISÃO: base legal LGPD e aviso aos responsáveis'
-status: Needs Paulo
+status: Blocked
 assignee: []
 created_date: '2026-09-10 01:56'
+updated_date: '2026-09-10 22:44'
 labels:
   - lgpd
   - blocker
@@ -37,3 +38,19 @@ O sistema armazena dados pessoais de crianças e adolescentes, que a LGPD proteg
 
 **Isto não bloqueia a implementação.** É uma pendência para a coordenação levar à direção antes de o sistema entrar em produção.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+DECIDIDO pelo Paulo em 10/09/2026, resposta dada no terminal, registrada aqui verbatim: "Rodar com dado mínimo até formalizar".
+
+O QUE ISSO SIGNIFICA NA PRÁTICA, e é vinculante para quem construir daqui em diante:
+- NÃO coletar contato de responsável no sistema enquanto a escola não formalizar a base legal;
+- portanto NÃO existe notificação de atraso por e-mail — a saída é a lista impressa por turma, que já está pronta na tela de atrasados;
+- o importador de planilha não deve exigir nem preencher coluna de responsável;
+- aluno real pode ser cadastrado com o mínimo: matrícula, nome, data de nascimento e turma.
+
+O card fica em Blocked, não em Needs Paulo: a decisão de operação está tomada e não espera mais o Paulo. O que falta é a escola formalizar (direção define base legal, avisa responsáveis, designa encarregado), e isso é terceiro. Quando formalizar, o contato de responsável e a notificação por e-mail (TASK-024) destravam.
+
+ATENÇÃO a quem for construir TASK-024: ela está bloqueada por esta decisão, não por falta de código.
+<!-- SECTION:NOTES:END -->
