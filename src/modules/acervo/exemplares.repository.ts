@@ -1,5 +1,4 @@
-import { prisma } from '@/core/db/client'
-import { dbDoTenant } from '@/core/db/tenant-extension'
+import { dbDoTenant, executarEmTransacao } from '@/core/db/tenant-extension'
 import { tenantAtual } from '@/core/tenant/context'
 import type { Prisma } from '@prisma/client'
 import type {
@@ -45,15 +44,21 @@ export const exemplaresRepository: RepositorioDeExemplares = {
     // A trava é liberada no fim da transação, sem cleanup manual, e a
     // chave sai do escolaId: escolas diferentes catalogam em paralelo sem
     // esperar uma pela outra.
-    return prisma.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${escolaId}))`
+    // Reentrante: quando a catalogação já abriu uma transação, esta roda
+    // dentro dela — obra e exemplares vivem ou morrem juntos. Chamado
+    // sozinho, abre a sua própria.
+    return executarEmTransacao(async () => {
+      // Pelo cliente da transação corrente: a trava só vale se for
+      // adquirida DENTRO da mesma transação que grava os tombos.
+      const db = dbDoTenant()
+      await db.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${escolaId}))`
 
       // SQL cru NÃO passa pela extensão de tenant, então o escolaId entra
       // aqui explicitamente — e vem de tenantAtual(), nunca do cliente
       // (Global Constraint 3). O filtro por tombo numérico existe porque
       // acervo importado pode trazer tombo alfanumérico, e um CAST cego
       // sobre ele derrubaria a consulta.
-      const [linha] = await tx.$queryRaw<{ maximo: number }[]>`
+      const [linha] = await db.$queryRaw<{ maximo: number }[]>`
         SELECT COALESCE(MAX(CAST(tombo AS BIGINT)), 0)::int AS maximo
         FROM "Exemplar"
         WHERE "escolaId" = ${escolaId} AND tombo ~ '^[0-9]+$'
@@ -78,7 +83,10 @@ export const exemplaresRepository: RepositorioDeExemplares = {
         }),
       )
 
-      return tx.exemplar.createManyAndReturn({
+      // Pela extensão de tenant (que enxerga a transação corrente), não
+      // pelo tx cru: assim o escolaId continua sendo carimbado pelo mesmo
+      // caminho de sempre, em vez de por uma exceção só deste arquivo.
+      return dbDoTenant().exemplar.createManyAndReturn({
         data: aCriar,
         select: CAMPOS,
       }) as unknown as Promise<ExemplarRegistrado[]>
