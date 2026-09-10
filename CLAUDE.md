@@ -22,22 +22,39 @@ nunca rodou — o workflow está escrito e versionado, mas nenhuma execução fo
 observada. Não existe projeto na Vercel nem banco Neon. Antes de qualquer promessa de
 staging ou produção, é isso que falta.
 
-**Acervo (m-1) em andamento — 7 das 11 tarefas em `main`.** O plano está em
-`docs/superpowers/plans/2026-09-10-acervo.md`.
+**Acervo (m-1) COMPLETO — as 11 tarefas em `main`**
+(`docs/superpowers/plans/2026-09-10-acervo.md`).
 
-Feito: os dois gates novos · schema do acervo com migration · autores (dedup por nome
-normalizado), categorias hierárquicas e localizações · serviço de Obras com busca por
-título sem acento · exemplares com tombo sequencial sob trava · provedores de ISBN
-(Google Books + Open Library em cascata) · **catalogação em série atômica** — o caminho
-crítico do projeto está fechado no domínio.
+Schema do acervo · autores (dedup por nome normalizado), categorias e localizações ·
+Obras com busca por título sem acento · exemplares com tombo sequencial sob trava ·
+ISBN via Google Books + Open Library em cascata · catalogação em série atômica, com a
+tela em que o cursor volta ao campo de ISBN · etiquetas A4 em PDF · inventário com as
+três listas · importador de planilha (alunos como uso primário).
 
-**Próximo passo: Tarefa 8 — as telas do acervo**, com a de catalogação em série
-(cursor volta ao campo de ISBN). Depois: etiquetas PDF (9), inventário (10),
-importador de planilha (11).
+**Próximo passo: escrever o plano do milestone `Circulação` (m-2)** — empréstimo,
+devolução, renovação, reservas, penalidades e Carrinho da Leitura. Escreva-o agora, no
+início da fase: as assinaturas de que ele depende (Exemplar, situação, tombo) já
+existem.
 
-Garantias provadas por mutação, não só por teste verde: sem a trava consultiva os
-tombos colidem sob concorrência; sem a transação a catalogação deixa obra órfã de
-exemplar. Se mexer nessas duas, refaça a mutação.
+### Garantias provadas por MUTAÇÃO — se mexer nelas, refaça a mutação
+
+Não basta o teste estar verde; estes quatro foram verificados removendo a proteção e
+confirmando que o teste reprova:
+
+| Proteção | Sem ela |
+|---|---|
+| Trava consultiva no tombo | tombos colidem sob concorrência |
+| Transação na catalogação | fica obra órfã de exemplar |
+| Transação na importação | importação parcial grava os alunos |
+| `drawText` do tombo | a etiqueta sai em branco |
+
+### Duas escolhas de dependência que divergem do plano, de propósito
+
+- **`vitest` ^3.2**, não ^2.1: a config usa `test.projects`, que não existe na 2.1.
+- **`exceljs`, não `xlsx`.** A última `xlsx` no npm (0.18.5) tem duas vulnerabilidades
+  altas — prototype pollution e ReDoS — corrigidas só na ≥0.20.2, que a SheetJS não
+  publica mais no npm. É o código que lê arquivo enviado de fora, num sistema com
+  dados de menores. Não volte para ela.
 
 ### Transação atravessa as camadas por AsyncLocalStorage
 
