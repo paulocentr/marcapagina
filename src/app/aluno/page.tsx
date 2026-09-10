@@ -12,9 +12,12 @@ export default async function PaginaDoAluno() {
     <main className="p-6">
       <h1 className="text-2xl font-semibold">Olá, {principal.nome}</h1>
       <p className="mt-1 text-sm text-neutral-600">Matrícula {principal.matricula}</p>
-      <a href="/sair" className="mt-6 inline-block text-sm underline">
-        Sair
-      </a>
+      {/* POST, não link — ver o comentário em src/app/sair/route.ts. */}
+      <form action="/sair" method="post" className="mt-6">
+        <button type="submit" className="text-sm underline">
+          Sair
+        </button>
+      </form>
     </main>
   )
 }

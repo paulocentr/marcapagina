@@ -79,13 +79,16 @@ export function NavegacaoLateral({
         <span className="min-w-0 grow truncate text-[13px] font-semibold text-tinta">
           {usuario.nome}
         </span>
-        {/* Rota de servidor: apagar o cookie de sessão não é navegação de
-            cliente, então é <a> e não <Link> — prefetch de /sair
-            derrubaria a sessão de quem só passou o mouse. */}
-        <a href="/sair" title="Sair" className="flex text-tinta-3 hover:text-tinta">
-          <Icone nome="sair" tamanho={17} traco={1.6} />
-          <span className="sr-only">Sair</span>
-        </a>
+        {/* Formulário POST, não link: apagar a sessão é efeito colateral,
+            e em GET qualquer coisa que só aponte para a URL o dispara —
+            foi assim que o prefetch de um <Link href="/sair"> derrubava a
+            sessão de quem só abriu o painel. */}
+        <form action="/sair" method="post" className="flex">
+          <button type="submit" title="Sair" className="flex text-tinta-3 hover:text-tinta">
+            <Icone nome="sair" tamanho={17} traco={1.6} />
+            <span className="sr-only">Sair</span>
+          </button>
+        </form>
       </div>
     </nav>
   )

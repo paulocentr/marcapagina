@@ -145,8 +145,23 @@ describe('nenhum <Link> aponta para um Route Handler', () => {
     expect(rotasDeServidor.length).toBeGreaterThan(0)
   })
 
+  /**
+   * Comentário fora, antes de procurar `<Link>`.
+   *
+   * Sem isto o gate acusa a PROSA: o comentário que explica o perigo do
+   * prefetch cita `<Link href="/sair">` literalmente, e o gate reprovava o
+   * arquivo que estava certo. Gate que grita à toa é gate que alguém
+   * desliga, e aí ele não protege mais nada.
+   *
+   * O `//` só conta como comentário quando não é o de `https://`.
+   */
+  function semComentarios(conteudo: string): string {
+    return conteudo.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+  }
+
   /** O href literal de cada `<Link>` do arquivo, sem a query string. */
-  function hrefsDeLink(conteudo: string): string[] {
+  function hrefsDeLink(bruto: string): string[] {
+    const conteudo = semComentarios(bruto)
     const encontrados: string[] = []
     for (const abertura of conteudo.matchAll(/<Link\b/g)) {
       const fim = conteudo.indexOf('>', abertura.index)
@@ -179,6 +194,35 @@ describe('nenhum <Link> aponta para um Route Handler', () => {
         `apareceu na tela — e no caso de /sair isso apaga o cookie de sessão. ` +
         `Use <a href> (o navegador não prefetcha) ou um POST.`,
     ).toEqual([])
+  })
+})
+
+describe('sair não é alcançável por GET', () => {
+  // O gate do <Link> acima cobre o caminho que nos morde uma vez. Este
+  // cobre a CLASSE: apagar a sessão é efeito colateral, e efeito colateral
+  // em GET é disparável por qualquer coisa que só APONTE para a URL — um
+  // <a href> esquecido, um <img src> numa mensagem, o pre-render de um
+  // cliente de e-mail, um crawler. Nenhum deles passa pelo gate do <Link>.
+  //
+  // Sem GET no handler, o `<a href="/sair">` esquecido responde 405. Falha
+  // visível, e não sessão da operadora evaporando no meio do atendimento.
+  const fonte = readFileSync(path.join(RAIZ, 'app/sair/route.ts'), 'utf8')
+
+  it('exporta POST', () => {
+    expect(
+      /export\s+async\s+function\s+POST\b/.test(fonte),
+      'src/app/sair/route.ts precisa tratar POST — é como as telas chamam o logout.',
+    ).toBe(true)
+  })
+
+  it('NÃO exporta GET', () => {
+    expect(
+      /export\s+(async\s+function\s+GET\b|const\s+GET\b)/.test(fonte),
+      'src/app/sair/route.ts voltou a aceitar GET. Qualquer coisa que aponte para ' +
+        '/sair — prefetch, <img src>, crawler, pre-render de e-mail — passa a apagar ' +
+        'a sessão sem ninguém clicar. Se precisa de uma tela de confirmação, ela é ' +
+        'uma page.tsx com um form POST, não um GET que já desloga.',
+    ).toBe(false)
   })
 })
 
