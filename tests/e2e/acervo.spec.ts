@@ -4,6 +4,15 @@ import { limparAcervo } from './apoio'
 // Os avisos são procurados DENTRO de <main>: o Next monta um
 // <div role="alert"> próprio em toda página (o route announcer), e um
 // getByRole solto casaria com os dois.
+//
+// Pela mesma razão as obras da busca também são procuradas dentro de
+// <main>: a casca do painel (src/app/painel/layout.tsx) desenha a
+// navegação lateral como <ul>, um <li> por item de menu, e ela vem ANTES
+// do conteúdo no DOM — um getByRole('listitem') solto acha "Painel", não
+// o primeiro resultado da busca.
+function obrasEncontradas(page: Page) {
+  return page.locator('main').getByRole('listitem')
+}
 
 // ISBN que a fixture conhece (MP_METADADOS_FAKE=1) e ISBN válido que ela
 // NÃO conhece — este último exercita o caminho de "nenhuma API achou",
@@ -110,8 +119,8 @@ test.describe('catalogação em série', () => {
     await page.goto('/painel/acervo?termo=casmurro')
 
     // Uma ficha só, com cinco exemplares.
-    await expect(page.getByRole('listitem')).toHaveCount(1)
-    await expect(page.getByRole('listitem').first()).toContainText('5')
+    await expect(obrasEncontradas(page)).toHaveCount(1)
+    await expect(obrasEncontradas(page).first()).toContainText('5')
   })
 
   test('quando nenhuma API acha, abre o formulário manual com o ISBN preenchido', async ({
@@ -149,7 +158,7 @@ test.describe('busca no acervo', () => {
 
     await page.goto('/painel/acervo?termo=casmurro')
 
-    await expect(page.getByRole('listitem').first()).toContainText('Dom Casmurro')
+    await expect(obrasEncontradas(page).first()).toContainText('Dom Casmurro')
   })
 
   test('busca sem acento acha título com acento', async ({ page }) => {
@@ -157,7 +166,7 @@ test.describe('busca no acervo', () => {
     await catalogar(page, ISBN_CONHECIDO)
 
     await page.goto('/painel/acervo?termo=CASMURRO')
-    await expect(page.getByRole('listitem').first()).toContainText('Dom Casmurro')
+    await expect(obrasEncontradas(page).first()).toContainText('Dom Casmurro')
   })
 
   test('diz claramente quando não há resultado', async ({ page }) => {

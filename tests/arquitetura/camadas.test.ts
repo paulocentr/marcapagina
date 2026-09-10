@@ -109,6 +109,79 @@ describe('Global Constraint 14: fetch só em src/infra', () => {
   })
 })
 
+describe('nenhum <Link> aponta para um Route Handler', () => {
+  // Por que isto é um gate e não uma revisão de código: o App Router
+  // PREFETCHA todo <Link> que entra na viewport, disparando um GET no href
+  // sem que ninguém clique. Se o href é um Route Handler, o handler
+  // EXECUTA — e `/sair` apaga o cookie de sessão. O sintoma não aparece na
+  // tela que tem o link: ela renderiza bem, a sessão morre em silêncio, e
+  // a próxima Server Action recusa com "É preciso entrar para continuar".
+  //
+  // Foi exatamente isso que deixou o E2E do acervo vermelho e intermitente:
+  // o `<Link href="/sair">` que existia em src/app/painel/page.tsx derrubava
+  // a sessão logo depois do login, e o prefetch é agendado por ociosidade —
+  // daí um conjunto diferente de testes falhar em cada rodada.
+  //
+  // Rota de servidor se alcança com `<a href>`, que o navegador não
+  // prefetcha, ou com POST quando a ação tem efeito colateral.
+  const arquivosDeRota = listarArquivos(path.join(RAIZ, 'app'))
+
+  function caminhoDoRouteHandler(arquivo: string): string {
+    const relativo = path.relative(path.join(RAIZ, 'app'), path.dirname(arquivo))
+    const segmentos = relativo
+      .split(path.sep)
+      // Grupos de rota — (marketing) — não entram na URL.
+      .filter((s) => s.length > 0 && !s.startsWith('('))
+    return '/' + segmentos.join('/')
+  }
+
+  const rotasDeServidor = arquivosDeRota
+    .filter((a) => path.basename(a) === 'route.ts' || path.basename(a) === 'route.tsx')
+    .map(caminhoDoRouteHandler)
+
+  it('encontra Route Handlers para verificar', () => {
+    // Guarda contra falso verde: sem rota nenhuma na lista, o gate abaixo
+    // passaria vazio e a invariante estaria desprotegida sem ninguém ver.
+    expect(rotasDeServidor.length).toBeGreaterThan(0)
+  })
+
+  /** O href literal de cada `<Link>` do arquivo, sem a query string. */
+  function hrefsDeLink(conteudo: string): string[] {
+    const encontrados: string[] = []
+    for (const abertura of conteudo.matchAll(/<Link\b/g)) {
+      const fim = conteudo.indexOf('>', abertura.index)
+      const tag = conteudo.slice(abertura.index, fim === -1 ? undefined : fim)
+      const href = tag.match(/href=\{?[`'"]([^`'"]*)[`'"]/)
+      if (href?.[1]) encontrados.push(href[1].split('?')[0]!)
+    }
+    return encontrados
+  }
+
+  /** `/api/cron/[job]` casa com `/api/cron/qualquer-coisa`. */
+  function casaComRota(href: string, rota: string): boolean {
+    const partesHref = href.replace(/\/+$/, '').split('/')
+    const partesRota = rota.replace(/\/+$/, '').split('/')
+    if (partesHref.length !== partesRota.length) return false
+    return partesRota.every((p, i) => p.startsWith('[') || p === partesHref[i])
+  }
+
+  const componentes = listarArquivos(RAIZ).filter((a) => a.endsWith('.tsx'))
+
+  it.each(componentes)('%s não usa <Link> para uma rota de servidor', (arquivo) => {
+    const proibidos = hrefsDeLink(readFileSync(arquivo, 'utf8')).filter((href) =>
+      rotasDeServidor.some((rota) => casaComRota(href, rota)),
+    )
+
+    expect(
+      proibidos,
+      `${path.relative(RAIZ, arquivo)} usa <Link> para um Route Handler: ${proibidos.join(', ')}. ` +
+        `O App Router prefetcha o href sem clique, então o handler roda só porque o link ` +
+        `apareceu na tela — e no caso de /sair isso apaga o cookie de sessão. ` +
+        `Use <a href> (o navegador não prefetcha) ou um POST.`,
+    ).toEqual([])
+  })
+})
+
 describe('modelos com escolaId estão declarados como escopados', () => {
   const CAMINHO_SCHEMA = path.resolve(AQUI, '../../prisma/schema.prisma')
 
