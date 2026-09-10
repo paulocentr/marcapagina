@@ -1,0 +1,408 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    :root{
+      --papel:#faf8f4; --papel2:#f2eee7; --sup:#ffffff;
+      --tinta:#26221c; --tinta2:#6b6459; --tinta3:#9a9287;
+      --linha:#e5dfd5; --linha2:#d3cbbe;
+      --marca:#1f5f52; --marca-forte:#17473d; --marca-suave:#e7f0ed;
+      --fita:#b5471f; --fita-suave:#fbeee6;
+      --atencao:#8f6410; --atencao-suave:#fbf1dc;
+      --alerta:#9e2617; --alerta-suave:#fbecea;
+      --certo:#2b6640; --certo-suave:#e9f2eb;
+      --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+      --serif:'Literata',Georgia,'Times New Roman',serif;
+      --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+      --r:6px; --rc:10px;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--papel); color:var(--tinta); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+    a{ color:var(--marca); text-decoration:none; } a:hover{ color:var(--marca-forte); }
+    h1,h2,h3{ margin:0; font-family:var(--serif); font-weight:600; letter-spacing:-.014em; }
+    .mono{ font-family:var(--mono); font-variant-ligatures:none; }
+    .rot{ font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--tinta3); }
+    .card{ background:var(--sup); border:1px solid var(--linha); border-radius:var(--rc); }
+    .btn{ font-family:var(--sans); font-size:13.5px; font-weight:600; height:40px; padding:0 16px; border-radius:var(--r); border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .chip{ display:inline-flex; align-items:center; gap:5px; height:23px; padding:0 9px; border-radius:999px; font-size:11.5px; font-weight:600; }
+    .nav{ display:flex; align-items:center; gap:11px; padding:9px 18px 9px 17px; color:var(--tinta2); font-size:13.5px; font-weight:500; border-left:3px solid transparent; }
+    .nav-on{ background:var(--marca-suave); color:var(--marca-forte); font-weight:600; border-left-color:var(--marca); }
+    th{ text-align:left; font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--tinta3); padding:0 14px 9px 0; border-bottom:1px solid var(--linha2); }
+    td{ padding:11px 14px 11px 0; border-bottom:1px solid var(--linha); font-size:13.5px; vertical-align:middle; }
+    table{ border-collapse:collapse; width:100%; }
+    .barra{ background:var(--marca); border-radius:4px 4px 0 0; width:100%; }
+  </style>
+</helmet>
+
+<div style="display:flex; width:1440px; height:1040px; background:var(--papel); overflow:hidden;">
+
+  <!-- NAVEGAÇÃO -->
+  <nav style="width:236px; flex-shrink:0; background:var(--sup); border-right:1px solid var(--linha); display:flex; flex-direction:column; padding:22px 0 16px;">
+    <div style="display:flex; align-items:center; gap:10px; padding:0 18px 22px;">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect x="2.6" y="2" width="17" height="22" rx="2.6" fill="#ffffff" stroke="#26221c" stroke-width="1.7"></rect>
+        <path d="M13.4 2h6.2v13.4l-3.1-2.3-3.1 2.3V2z" fill="#b5471f"></path>
+      </svg>
+      <span style="font-family:var(--serif); font-size:18px; font-weight:700; letter-spacing:-.02em;">Marca-Página</span>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:1px;">
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 7h11l-3-3M17 13H6l3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span>Balcão</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3.5" y="4" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="1.6"></rect><rect x="11.5" y="4" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="1.6"></rect></svg>
+        <span>Acervo</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5v10M6 5v10M8.4 5v10M11.2 5v10M14 5v10M17 5v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+        <span>Catalogar</span>
+      </a>
+      <a href="#" class="nav" style="justify-content:space-between;">
+        <span style="display:flex; align-items:center; gap:11px;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.8" stroke="currentColor" stroke-width="1.6"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          <span>Atrasados</span>
+        </span>
+        <span class="chip" style="background:var(--atencao-suave); color:var(--atencao); height:20px; padding:0 7px;">14</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 3.5h2.2l2 9.2h8.1l1.9-6.7H6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="7.6" cy="16" r="1.3" stroke="currentColor" stroke-width="1.5"></circle><circle cx="13.8" cy="16" r="1.3" stroke="currentColor" stroke-width="1.5"></circle></svg>
+        <span>Carrinho da Leitura</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8" cy="7.4" r="2.8" stroke="currentColor" stroke-width="1.6"></circle><path d="M3 16.6c0-2.6 2.2-4.3 5-4.3s5 1.7 5 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><path d="M13.4 5.3a2.6 2.6 0 010 5M15.2 16.6c0-1.7-.5-3-1.5-3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        <span>Alunos e turmas</span>
+      </a>
+      <a href="#" class="nav nav-on">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 16.5V9.5M8 16.5V4.5M12.5 16.5v-5M17 16.5V7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        <span>Painel do Leitor</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6.5h8.2M15.4 6.5H17M3 13.5h2.6M9.8 13.5H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><circle cx="13.4" cy="6.5" r="1.9" stroke="currentColor" stroke-width="1.6"></circle><circle cx="7.6" cy="13.5" r="1.9" stroke="currentColor" stroke-width="1.6"></circle></svg>
+        <span>Configuração</span>
+      </a>
+    </div>
+
+    <div style="flex-grow:1;"></div>
+
+    <div style="padding:14px 18px 0; border-top:1px solid var(--linha); display:flex; align-items:center; gap:10px;">
+      <div style="width:32px; height:32px; border-radius:50%; background:var(--marca-suave); color:var(--marca-forte); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700; flex-shrink:0;">CO</div>
+      <div style="min-width:0; flex-grow:1;">
+        <div style="font-size:13px; font-weight:600;">Coordenação</div>
+        <div style="font-size:11.5px; color:var(--tinta3);">Escola Piloto</div>
+      </div>
+      <a href="#" style="color:var(--tinta3); display:flex;" aria-label="Sair">
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12 14v2.5H4V3.5h8V6M9 10h8m0 0l-2.6-2.6M17 10l-2.6 2.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO -->
+  <div style="flex-grow:1; display:flex; flex-direction:column; min-width:0; overflow:hidden;">
+
+    <header style="display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:24px 32px 0;">
+      <div>
+        <h1 style="font-size:26px;">Painel do Leitor</h1>
+        <p style="margin:3px 0 0; font-size:13.5px; color:var(--tinta2);">
+          o que a coordenação leva para a reunião pedagógica
+        </p>
+      </div>
+      <div style="display:flex; align-items:center; gap:9px;">
+        <div style="display:flex; background:var(--sup); border:1px solid var(--linha2); border-radius:var(--r); overflow:hidden;">
+          <button style="font-family:var(--sans); font-size:13px; font-weight:600; height:38px; padding:0 14px; border:none; background:var(--marca-suave); color:var(--marca-forte); cursor:pointer;">Setembro</button>
+          <button style="font-family:var(--sans); font-size:13px; font-weight:500; height:38px; padding:0 14px; border:none; border-left:1px solid var(--linha); background:transparent; color:var(--tinta2); cursor:pointer;">Bimestre</button>
+          <button style="font-family:var(--sans); font-size:13px; font-weight:500; height:38px; padding:0 14px; border:none; border-left:1px solid var(--linha); background:transparent; color:var(--tinta2); cursor:pointer;">Ano letivo</button>
+        </div>
+        <button class="btn" style="background:var(--sup); color:var(--tinta); border-color:var(--linha2); height:38px;">Exportar CSV</button>
+        <button class="btn" style="background:var(--sup); color:var(--tinta); border-color:var(--linha2); height:38px;">PDF</button>
+      </div>
+    </header>
+
+    <div style="display:flex; flex-direction:column; gap:16px; padding:22px 32px 28px; min-height:0;">
+
+      <!-- números -->
+      <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px;">
+        <div class="card" style="padding:18px 20px;">
+          <div class="rot">Empréstimos em setembro</div>
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-top:6px;">
+            <span style="font-family:var(--serif); font-size:38px; font-weight:700; line-height:1; letter-spacing:-.03em;">325</span>
+            <svg width="120" height="32" viewBox="0 0 120 32" fill="none" aria-hidden="true" style="margin-bottom:3px;">
+              <polyline points="2,28 12.5,24 23,27 33.5,20 44,22 54.5,15 65,18 75.5,12 86,16 96.5,8 107,11 117.5,4" stroke="#1f5f52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></polyline>
+              <circle cx="117.5" cy="4" r="3" fill="#1f5f52" stroke="#ffffff" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <div style="font-size:12.5px; color:var(--tinta2); margin-top:8px;">
+            <span style="color:var(--certo); font-weight:600;">+11%</span> sobre agosto (293) · 12 semanas
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px 20px;">
+          <div class="rot">Livros em mãos agora</div>
+          <div style="font-family:var(--serif); font-size:38px; font-weight:700; line-height:1; letter-spacing:-.03em; margin-top:6px;">96</div>
+          <div style="font-size:12.5px; color:var(--tinta2); margin-top:8px;">
+            4,5% do acervo circulando · média de 12 dias por empréstimo
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px 20px; border-color:#ecd7a8; background:#fffdf8;">
+          <div class="rot" style="color:var(--atencao);">Atrasados</div>
+          <div style="display:flex; align-items:flex-end; gap:9px; margin-top:6px;">
+            <span style="font-family:var(--serif); font-size:38px; font-weight:700; line-height:1; letter-spacing:-.03em; color:var(--atencao);">14</span>
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="color:var(--atencao); margin-bottom:6px;" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="font-size:12.5px; color:#6e4d0c; margin-top:8px;">
+            o mais antigo há 23 dias · 3 leitores suspensos
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px 20px;">
+          <div class="rot">Leitores ativos</div>
+          <div style="display:flex; align-items:flex-end; gap:6px; margin-top:6px;">
+            <span style="font-family:var(--serif); font-size:38px; font-weight:700; line-height:1; letter-spacing:-.03em;">212</span>
+            <span style="font-size:15px; color:var(--tinta3); margin-bottom:4px;">de 486</span>
+          </div>
+          <div style="height:6px; border-radius:3px; background:var(--papel2); margin-top:12px; overflow:hidden;">
+            <div style="width:44%; height:100%; background:var(--marca); border-radius:3px;"></div>
+          </div>
+          <div style="font-size:12.5px; color:var(--tinta2); margin-top:7px;">44% dos alunos pegaram ao menos um livro</div>
+        </div>
+      </div>
+
+      <!-- gráfico + mais emprestados -->
+      <div style="display:flex; gap:16px;">
+        <div class="card" style="flex-grow:1; padding:20px 22px; min-width:0;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <h2 style="font-size:16px; font-family:var(--sans); font-weight:600;">Empréstimos por turma, em setembro</h2>
+            <span style="font-size:12.5px; color:var(--tinta3);">passe o cursor para ver o número</span>
+          </div>
+
+          <!-- plot -->
+          <div style="display:flex; gap:14px; margin-top:20px;">
+            <div style="width:26px; flex-shrink:0; height:170px; position:relative;">
+              <span class="mono" style="position:absolute; top:-6px; right:0; font-size:10.5px; color:var(--tinta3);">48</span>
+              <span class="mono" style="position:absolute; top:76px; right:0; font-size:10.5px; color:var(--tinta3);">24</span>
+              <span class="mono" style="position:absolute; bottom:-6px; right:0; font-size:10.5px; color:var(--tinta3);">0</span>
+            </div>
+
+            <div style="flex-grow:1; min-width:0; position:relative; height:170px;">
+              <div style="position:absolute; left:0; right:0; top:0; border-top:1px solid var(--linha);"></div>
+              <div style="position:absolute; left:0; right:0; top:85px; border-top:1px solid var(--linha);"></div>
+              <div style="position:absolute; left:0; right:0; bottom:0; border-top:1px solid var(--linha2);"></div>
+
+              <div style="display:flex; align-items:flex-end; gap:12px; height:170px; position:relative;">
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:151px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:138px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:112px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative;">
+                  <span class="mono" style="position:absolute; bottom:176px; font-size:11.5px; font-weight:600; color:var(--tinta);">47</span>
+                  <div class="barra" style="height:170px;"></div>
+                </div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:105px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:94px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:80px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:90px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:122px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;"><div class="barra" style="height:68px;"></div></div>
+                <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; position:relative;">
+                  <span class="mono" style="position:absolute; bottom:50px; font-size:11.5px; font-weight:600; color:var(--tinta2);">12</span>
+                  <div class="barra" style="height:44px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- eixo x -->
+          <div style="display:flex; gap:14px; margin-top:8px;">
+            <div style="width:26px; flex-shrink:0;"></div>
+            <div style="flex-grow:1; display:flex; gap:12px; min-width:0;">
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">6º A</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">6º B</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">7º A</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta); font-weight:600;">7º B</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">8º A</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">8º B</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">9º A</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">9º B</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">1º EM</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">2º EM</span>
+              <span style="flex-grow:1; text-align:center; font-size:11.5px; color:var(--tinta2);">3º EM</span>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px; margin-top:16px; padding-top:14px; border-top:1px solid var(--linha); font-size:12.5px; color:var(--tinta2);">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="color:var(--tinta3); flex-shrink:0;" aria-hidden="true"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"></circle><path d="M10 9v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><circle cx="10" cy="6.3" r=".95" fill="currentColor"></circle></svg>
+            O 3º ano do Médio cai todo setembro — é o mês do simulado. Vale ler junto com a
+            <a href="#">tabela por turma</a>.
+          </div>
+        </div>
+
+        <div class="card" style="width:344px; flex-shrink:0; padding:20px 22px;">
+          <h2 style="font-size:16px; font-family:var(--sans); font-weight:600;">Mais emprestados</h2>
+          <p style="margin:3px 0 0; font-size:12.5px; color:var(--tinta2);">setembro, todas as turmas</p>
+
+          <div style="display:flex; flex-direction:column; margin-top:14px;">
+            <div style="display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:12px; color:var(--tinta3); width:14px;">1</span>
+              <div style="flex-grow:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600; line-height:1.3;">A Bolsa Amarela</div>
+                <div style="font-size:12px; color:var(--tinta2);">Lygia Bojunga</div>
+              </div>
+              <span class="mono" style="font-size:14px; font-weight:600;">19</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:12px; color:var(--tinta3); width:14px;">2</span>
+              <div style="flex-grow:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600; line-height:1.3;">Capitães da Areia</div>
+                <div style="font-size:12px; color:var(--tinta2);">Jorge Amado</div>
+              </div>
+              <span class="mono" style="font-size:14px; font-weight:600;">17</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:12px; color:var(--tinta3); width:14px;">3</span>
+              <div style="flex-grow:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600; line-height:1.3;">O Menino Maluquinho</div>
+                <div style="font-size:12px; color:var(--tinta2);">Ziraldo</div>
+              </div>
+              <span class="mono" style="font-size:14px; font-weight:600;">15</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:12px; color:var(--tinta3); width:14px;">4</span>
+              <div style="flex-grow:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600; line-height:1.3;">Dom Casmurro</div>
+                <div style="font-size:12px; color:var(--tinta2);">Machado de Assis</div>
+              </div>
+              <span class="mono" style="font-size:14px; font-weight:600;">11</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; padding:9px 0;">
+              <span class="mono" style="font-size:12px; color:var(--tinta3); width:14px;">5</span>
+              <div style="flex-grow:1; min-width:0;">
+                <div style="font-size:13.5px; font-weight:600; line-height:1.3;">Quarto de Despejo</div>
+                <div style="font-size:12px; color:var(--tinta2);">Carolina Maria de Jesus</div>
+              </div>
+              <span class="mono" style="font-size:14px; font-weight:600;">9</span>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--linha);">
+            <div class="rot">Nunca emprestados</div>
+            <div style="display:flex; align-items:baseline; gap:8px; margin-top:4px;">
+              <span style="font-family:var(--serif); font-size:24px; font-weight:700;">311</span>
+              <span style="font-size:12.5px; color:var(--tinta2);">obras paradas desde a catalogação</span>
+            </div>
+            <a href="#" style="font-size:12.5px; display:inline-block; margin-top:6px;">ver a lista para o carrinho →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- atrasados -->
+      <div class="card" style="padding:20px 22px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px;">
+          <div>
+            <h2 style="font-size:16px; font-family:var(--sans); font-weight:600;">Atrasados agora</h2>
+            <p style="margin:2px 0 0; font-size:12.5px; color:var(--tinta2);">
+              calculado na hora: prazo menor que hoje e ainda sem devolução
+            </p>
+          </div>
+          <div style="display:flex; gap:9px;">
+            <button class="btn" style="background:var(--sup); color:var(--tinta); border-color:var(--linha2); height:36px; font-size:13px;">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6 7.5V3.5h8v4M6 14H4V7.5h12V14h-2M6 11h8v6H6z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              Lista impressa por turma
+            </button>
+            <button class="btn" style="background:var(--marca); color:#fff; height:36px; font-size:13px;">Avisar os responsáveis</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width:230px;">Aluno</th>
+              <th style="width:78px;">Turma</th>
+              <th>Livro</th>
+              <th style="width:92px;">Tombo</th>
+              <th style="width:104px;">Venceu em</th>
+              <th style="width:150px;">Atraso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600;">Bruno Tavares Lopes</td>
+              <td>9º A</td>
+              <td>Grande Sertão: Veredas</td>
+              <td class="mono">000276</td>
+              <td class="mono" style="color:var(--tinta2);">18/08</td>
+              <td>
+                <span class="chip" style="background:var(--alerta-suave); color:var(--alerta);">
+                  <svg width="11" height="11" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3l7.5 13.5H2.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+                  23 dias · suspenso
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Lucas Andrade Prado</td>
+              <td>7º B</td>
+              <td>O Cortiço</td>
+              <td class="mono">000412</td>
+              <td class="mono" style="color:var(--tinta2);">02/09</td>
+              <td>
+                <span class="chip" style="background:var(--atencao-suave); color:var(--atencao);">
+                  <svg width="11" height="11" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+                  8 dias
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Ana Beatriz Rocha</td>
+              <td>8º A</td>
+              <td>O Cortiço</td>
+              <td class="mono">000412</td>
+              <td class="mono" style="color:var(--tinta2);">02/09</td>
+              <td>
+                <span class="chip" style="background:var(--atencao-suave); color:var(--atencao);">
+                  <svg width="11" height="11" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+                  8 dias
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Mariana Figueiredo</td>
+              <td>1º EM</td>
+              <td>Vidas Secas</td>
+              <td class="mono">000188</td>
+              <td class="mono" style="color:var(--tinta2);">05/09</td>
+              <td>
+                <span class="chip" style="background:var(--atencao-suave); color:var(--atencao);">
+                  <svg width="11" height="11" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+                  5 dias
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px;">
+          <span style="font-size:12.5px; color:var(--tinta2);">mostrando 4 de 14</span>
+          <a href="#" style="font-size:13px; font-weight:600;">ver todos os atrasados →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    :root{
+      --papel:#faf8f4; --papel2:#f2eee7; --sup:#ffffff;
+      --tinta:#26221c; --tinta2:#6b6459; --tinta3:#9a9287;
+      --linha:#e5dfd5; --linha2:#d3cbbe;
+      --marca:#1f5f52; --marca-forte:#17473d; --marca-suave:#e7f0ed;
+      --fita:#b5471f; --fita-suave:#fbeee6;
+      --atencao:#8f6410; --atencao-suave:#fbf1dc;
+      --alerta:#9e2617; --alerta-suave:#fbecea;
+      --certo:#2b6640; --certo-suave:#e9f2eb;
+      --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+      --serif:'Literata',Georgia,'Times New Roman',serif;
+      --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+      --r:6px; --rc:10px;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--papel); color:var(--tinta); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+    a{ color:var(--marca); text-decoration:none; } a:hover{ color:var(--marca-forte); }
+    h1,h2,h3{ margin:0; font-family:var(--serif); font-weight:600; letter-spacing:-.014em; }
+    .mono{ font-family:var(--mono); font-variant-ligatures:none; }
+    .rot{ font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--tinta3); }
+    .card{ background:var(--sup); border:1px solid var(--linha); border-radius:var(--rc); }
+    .btn{ font-family:var(--sans); font-size:13.5px; font-weight:600; height:40px; padding:0 16px; border-radius:var(--r); border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .campo{ font-family:var(--sans); font-size:14px; height:40px; padding:0 12px; border:1px solid var(--linha2); border-radius:var(--r); background:var(--sup); color:var(--tinta); width:100%; }
+    .chip{ display:inline-flex; align-items:center; gap:5px; height:23px; padding:0 9px; border-radius:999px; font-size:11.5px; font-weight:600; }
+    .nav{ display:flex; align-items:center; gap:11px; padding:9px 18px 9px 17px; color:var(--tinta2); font-size:13.5px; font-weight:500; border-left:3px solid transparent; }
+    .nav-on{ background:var(--marca-suave); color:var(--marca-forte); font-weight:600; border-left-color:var(--marca); }
+    .tecla{ font-family:var(--mono); font-size:11px; background:var(--papel2); border:1px solid var(--linha); border-bottom-width:2px; border-radius:4px; padding:1px 5px; color:var(--tinta2); }
+  </style>
+</helmet>
+
+<div style="display:flex; width:1440px; height:980px; background:var(--papel); overflow:hidden;">
+
+  <!-- NAVEGAÇÃO -->
+  <nav style="width:236px; flex-shrink:0; background:var(--sup); border-right:1px solid var(--linha); display:flex; flex-direction:column; padding:22px 0 16px;">
+    <div style="display:flex; align-items:center; gap:10px; padding:0 18px 22px;">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect x="2.6" y="2" width="17" height="22" rx="2.6" fill="#ffffff" stroke="#26221c" stroke-width="1.7"></rect>
+        <path d="M13.4 2h6.2v13.4l-3.1-2.3-3.1 2.3V2z" fill="#b5471f"></path>
+      </svg>
+      <span style="font-family:var(--serif); font-size:18px; font-weight:700; letter-spacing:-.02em;">Marca-Página</span>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:1px;">
+      <a href="#" class="nav nav-on">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 7h11l-3-3M17 13H6l3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <span>Balcão</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3.5" y="4" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="1.6"></rect><rect x="11.5" y="4" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="1.6"></rect></svg>
+        <span>Acervo</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 5v10M6 5v10M8.4 5v10M11.2 5v10M14 5v10M17 5v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+        <span>Catalogar</span>
+      </a>
+      <a href="#" class="nav" style="justify-content:space-between;">
+        <span style="display:flex; align-items:center; gap:11px;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="6.8" stroke="currentColor" stroke-width="1.6"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+          <span>Atrasados</span>
+        </span>
+        <span class="chip" style="background:var(--atencao-suave); color:var(--atencao); height:20px; padding:0 7px;">13</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 3.5h2.2l2 9.2h8.1l1.9-6.7H6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="7.6" cy="16" r="1.3" stroke="currentColor" stroke-width="1.5"></circle><circle cx="13.8" cy="16" r="1.3" stroke="currentColor" stroke-width="1.5"></circle></svg>
+        <span>Carrinho da Leitura</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="8" cy="7.4" r="2.8" stroke="currentColor" stroke-width="1.6"></circle><path d="M3 16.6c0-2.6 2.2-4.3 5-4.3s5 1.7 5 4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><path d="M13.4 5.3a2.6 2.6 0 010 5M15.2 16.6c0-1.7-.5-3-1.5-3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        <span>Alunos e turmas</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 16.5V9.5M8 16.5V4.5M12.5 16.5v-5M17 16.5V7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        <span>Painel do Leitor</span>
+      </a>
+      <a href="#" class="nav">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6.5h8.2M15.4 6.5H17M3 13.5h2.6M9.8 13.5H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><circle cx="13.4" cy="6.5" r="1.9" stroke="currentColor" stroke-width="1.6"></circle><circle cx="7.6" cy="13.5" r="1.9" stroke="currentColor" stroke-width="1.6"></circle></svg>
+        <span>Configuração</span>
+      </a>
+    </div>
+
+    <div style="flex-grow:1;"></div>
+
+    <div style="padding:14px 18px 0; border-top:1px solid var(--linha); display:flex; align-items:center; gap:10px;">
+      <div style="width:32px; height:32px; border-radius:50%; background:var(--marca-suave); color:var(--marca-forte); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:700; flex-shrink:0;">CO</div>
+      <div style="min-width:0; flex-grow:1;">
+        <div style="font-size:13px; font-weight:600;">Coordenação</div>
+        <div style="font-size:11.5px; color:var(--tinta3);">Escola Piloto</div>
+      </div>
+      <a href="#" style="color:var(--tinta3); display:flex;" aria-label="Sair">
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12 14v2.5H4V3.5h8V6M9 10h8m0 0l-2.6-2.6M17 10l-2.6 2.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO -->
+  <div style="flex-grow:1; display:flex; flex-direction:column; min-width:0;">
+
+    <header style="display:flex; align-items:flex-end; justify-content:space-between; gap:24px; padding:24px 32px 0;">
+      <div>
+        <h1 style="font-size:26px;">Balcão</h1>
+        <p style="margin:3px 0 0; font-size:13.5px; color:var(--tinta2);">
+          quinta, 10 de setembro · <span class="mono">15:04</span>
+        </p>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; padding-bottom:2px;">
+        <span class="rot" style="color:var(--tinta3);">atalhos</span>
+        <span class="tecla">Enter</span><span style="font-size:12px; color:var(--tinta3);">registra</span>
+        <span class="tecla">P</span><span style="font-size:12px; color:var(--tinta3);">imprime a tira</span>
+      </div>
+    </header>
+
+    <div style="display:flex; gap:2px; padding:20px 32px 0; border-bottom:1px solid var(--linha); margin-top:18px;">
+      <button style="font-family:var(--sans); font-size:14.5px; font-weight:500; height:40px; padding:0 18px; border:none; background:transparent; color:var(--tinta2); cursor:pointer;">Emprestar</button>
+      <button style="font-family:var(--sans); font-size:14.5px; font-weight:600; height:40px; padding:0 18px; border:none; background:transparent; color:var(--marca-forte); box-shadow:inset 0 -2px 0 var(--marca); cursor:pointer;">Devolver</button>
+    </div>
+
+    <div style="flex-grow:1; display:flex; gap:24px; padding:24px 32px 28px; min-height:0;">
+
+      <div style="flex-grow:1; display:flex; flex-direction:column; gap:16px; min-width:0;">
+
+        <!-- entrada -->
+        <div class="card" style="padding:20px 22px;">
+          <div style="display:flex; align-items:flex-end; gap:14px;">
+            <label style="display:flex; flex-direction:column; gap:7px; width:250px;">
+              <span class="rot" style="color:var(--tinta2);">Tombo do livro</span>
+              <input class="campo mono" value="" placeholder="bipe a etiqueta" style="height:52px; font-size:20px; letter-spacing:.05em; border-color:var(--marca); box-shadow:0 0 0 3px rgba(31,95,82,.15);">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:7px; width:210px;">
+              <span class="rot" style="color:var(--tinta2);">Como o livro voltou</span>
+              <select class="campo" style="height:52px; font-size:15px;">
+                <option>Bom</option>
+                <option>Novo</option>
+                <option>Desgastado</option>
+                <option>Danificado</option>
+              </select>
+            </label>
+            <button class="btn" style="background:var(--marca); color:#fff; height:52px; padding:0 20px; font-size:14.5px;">Registrar devolução</button>
+            <div style="flex-grow:1;"></div>
+            <div style="text-align:right; font-size:12.5px; color:var(--tinta3); padding-bottom:6px;">
+              devolvidos hoje<br><span style="font-family:var(--serif); font-size:22px; font-weight:700; color:var(--tinta);">27</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTADO DA DEVOLUÇÃO -->
+        <div class="card" style="padding:0; overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:12px; padding:15px 22px; background:var(--certo-suave); border-bottom:1px solid #c9e0d1;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="color:var(--certo); flex-shrink:0;" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span style="font-size:14.5px; color:#1f4a2e;">
+              <strong>“O Cortiço” devolvido por Lucas Andrade Prado (7º B).</strong>
+              Tombo <span class="mono">000412</span> · voltou em estado Bom.
+            </span>
+          </div>
+
+          <div style="padding:22px;">
+            <!-- A FITA: o que a operadora tem que FAZER agora -->
+            <div style="display:flex; gap:16px; padding:20px; border-radius:var(--r); background:var(--fita-suave); border:1px solid #ecccb9; border-left:4px solid var(--fita);">
+              <svg width="26" height="26" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--fita);" aria-hidden="true"><path d="M6 2h8v15l-4-3-4 3V2z" fill="currentColor"></path></svg>
+              <div style="flex-grow:1; min-width:0;">
+                <div style="font-family:var(--serif); font-size:20px; font-weight:700; color:#7d2f13; letter-spacing:-.015em;">
+                  Separe este exemplar — não devolva à estante
+                </div>
+                <div style="font-size:14px; color:#8a3a1c; margin-top:5px;">
+                  Reservado para <strong>Júlia Nogueira Maciel (9º B)</strong>, próxima da fila.
+                  Ela tem até <strong class="mono">13/09</strong> para retirar; depois disso o
+                  sistema passa a vez sozinho.
+                </div>
+                <div style="display:flex; gap:9px; margin-top:14px;">
+                  <button class="btn" style="background:var(--fita); color:#fff;">
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6 7.5V3.5h8v4M6 14H4V7.5h12V14h-2M6 11h8v6H6z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    Imprimir a tira de reserva
+                  </button>
+                  <button class="btn" style="background:transparent; color:#8a3a1c; border-color:#e0b49b;">Já separei</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- penalidade -->
+            <div style="display:flex; gap:16px; margin-top:16px;">
+              <div style="flex-grow:1; display:flex; gap:11px; padding:15px 16px; border-radius:var(--r); background:var(--atencao-suave); border:1px solid #ecd7a8;">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--atencao); margin-top:1px;" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                <div style="font-size:13.5px; color:#6e4d0c;">
+                  <strong>8 dias de atraso.</strong>
+                  Leitor suspenso até <span class="mono">18/09</span> — 1 dia de suspensão por dia de
+                  atraso, teto de 60 dias.
+                  <div style="margin-top:6px; font-size:12.5px;">
+                    <a href="#" style="color:#6e4d0c; text-decoration:underline;">Perdoar a suspensão</a>
+                    · fica na auditoria
+                  </div>
+                </div>
+              </div>
+
+              <div style="width:230px; flex-shrink:0; padding:15px 16px; border-radius:var(--r); background:var(--papel2); border:1px solid var(--linha);">
+                <div class="rot" style="color:var(--tinta2);">Exemplar agora</div>
+                <div style="display:flex; flex-direction:column; gap:7px; margin-top:9px; font-size:13px;">
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--tinta2);">Tombo</span><span class="mono">000412</span></div>
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--tinta2);">Estado</span><span>Bom</span></div>
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--tinta2);">Situação</span><span style="color:var(--fita); font-weight:600;">Separado</span></div>
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--tinta2);">Estante</span><span>2-C</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex-grow:1;"></div>
+
+        <div style="display:flex; align-items:center; gap:10px; font-size:13px; color:var(--tinta2); padding:0 4px;">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" style="color:var(--tinta3);" aria-hidden="true"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"></circle><path d="M10 9v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path><circle cx="10" cy="6.3" r=".95" fill="currentColor"></circle></svg>
+          Estado <strong>Danificado</strong> não gera penalidade automática — a decisão é da coordenação.
+        </div>
+      </div>
+
+      <!-- trilha lateral -->
+      <div style="width:336px; flex-shrink:0; display:flex; flex-direction:column; gap:16px; min-height:0;">
+
+        <div class="card" style="padding:18px 20px;">
+          <h2 style="font-size:15px; font-family:var(--sans); font-weight:600;">Prateleira de separados</h2>
+          <p style="margin:3px 0 0; font-size:12.5px; color:var(--tinta2);">esperando quem reservou</p>
+
+          <div style="display:flex; flex-direction:column; margin-top:12px;">
+            <div style="display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--linha); align-items:flex-start;">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--fita); margin-top:2px;" aria-hidden="true"><path d="M6 2h8v15l-4-3-4 3V2z" fill="currentColor"></path></svg>
+              <div style="min-width:0; font-size:13px;">
+                <div style="font-weight:600;">O Cortiço</div>
+                <div style="color:var(--tinta2); font-size:12.5px;">Júlia Nogueira · até 13/09</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--linha); align-items:flex-start;">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--fita); margin-top:2px;" aria-hidden="true"><path d="M6 2h8v15l-4-3-4 3V2z" fill="currentColor"></path></svg>
+              <div style="min-width:0; font-size:13px;">
+                <div style="font-weight:600;">O Ateneu</div>
+                <div style="color:var(--tinta2); font-size:12.5px;">Rafael Menezes · até 12/09</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; padding:11px 0; align-items:flex-start;">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--atencao); margin-top:2px;" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+              <div style="min-width:0; font-size:13px;">
+                <div style="font-weight:600;">Grande Sertão: Veredas</div>
+                <div style="color:var(--atencao); font-size:12.5px;">vence hoje · volta à estante amanhã</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px 20px; flex-grow:1; min-height:0;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between;">
+            <h2 style="font-size:15px; font-family:var(--sans); font-weight:600;">Devoluções de hoje</h2>
+            <span style="font-size:12.5px; color:var(--tinta3);">27</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; margin-top:12px;">
+            <div style="display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:11.5px; color:var(--tinta3); width:38px; flex-shrink:0; padding-top:2px;">15:04</span>
+              <div style="min-width:0; font-size:13px;">
+                Lucas Andrade Prado
+                <div style="color:var(--tinta2); font-size:12.5px;">O Cortiço · <span style="color:var(--atencao); font-weight:600;">8 dias</span></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:11.5px; color:var(--tinta3); width:38px; flex-shrink:0; padding-top:2px;">14:47</span>
+              <div style="min-width:0; font-size:13px;">
+                Marina Costa Ferraz
+                <div style="color:var(--tinta2); font-size:12.5px;">A Hora da Estrela · em dia</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:11.5px; color:var(--tinta3); width:38px; flex-shrink:0; padding-top:2px;">14:22</span>
+              <div style="min-width:0; font-size:13px;">
+                Sofia Ribeiro Alves
+                <div style="color:var(--tinta2); font-size:12.5px;">Memórias Póstumas · em dia</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--linha);">
+              <span class="mono" style="font-size:11.5px; color:var(--tinta3); width:38px; flex-shrink:0; padding-top:2px;">13:58</span>
+              <div style="min-width:0; font-size:13px;">
+                Gabriel Nunes Sá
+                <div style="color:var(--tinta2); font-size:12.5px;">O Guarani · <span style="color:var(--alerta); font-weight:600;">danificado</span></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px; padding:10px 0;">
+              <span class="mono" style="font-size:11.5px; color:var(--tinta3); width:38px; flex-shrink:0; padding-top:2px;">13:40</span>
+              <div style="min-width:0; font-size:13px;">
+                Isabela Martins
+                <div style="color:var(--tinta2); font-size:12.5px;">Quarto de Despejo · em dia</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

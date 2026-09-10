@@ -54,14 +54,12 @@ export default async function PaginaDoPainel() {
 
   return (
     <main className="mx-auto max-w-3xl p-6">
-      <header className="mb-8 flex items-baseline justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Marca-Página</h1>
-          <p className="text-sm text-neutral-600">{principal.nome}</p>
-        </div>
-        <Link href="/sair" className="text-sm underline">
-          Sair
-        </Link>
+      {/* Nome de quem está logado e "Sair" saíram daqui: a casca do
+          painel (src/app/painel/layout.tsx) carrega os dois no rodapé da
+          navegação, em toda tela de /painel. Repetir o nome aqui deixaria
+          "Coordenação" duas vezes na mesma página. */}
+      <header className="mb-8">
+        <h1 className="text-2xl font-semibold">Painel</h1>
       </header>
 
       {disponiveis.length === 0 ? (

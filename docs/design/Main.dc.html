@@ -1,0 +1,378 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    :root{
+      --papel:#faf8f4; --papel2:#f2eee7; --sup:#ffffff;
+      --tinta:#26221c; --tinta2:#6b6459; --tinta3:#9a9287;
+      --linha:#e5dfd5; --linha2:#d3cbbe;
+      --marca:#1f5f52; --marca-forte:#17473d; --marca-suave:#e7f0ed;
+      --fita:#b5471f; --fita-suave:#fbeee6;
+      --atencao:#8f6410; --atencao-suave:#fbf1dc;
+      --alerta:#9e2617; --alerta-suave:#fbecea;
+      --certo:#2b6640; --certo-suave:#e9f2eb;
+      --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+      --serif:'Literata',Georgia,'Times New Roman',serif;
+      --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+      --r:6px; --rc:10px;
+      --sombra:0 1px 2px rgba(38,34,28,.05), 0 10px 28px -18px rgba(38,34,28,.28);
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--papel); color:var(--tinta); font-family:var(--sans); font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased; }
+    a{ color:var(--marca); } a:hover{ color:var(--marca-forte); }
+    h1,h2,h3{ margin:0; font-family:var(--serif); font-weight:600; letter-spacing:-.012em; }
+    .mono{ font-family:var(--mono); font-variant-ligatures:none; }
+    .rot{ font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--tinta3); }
+    .card{ background:var(--sup); border:1px solid var(--linha); border-radius:var(--rc); }
+    .btn{ font-family:var(--sans); font-size:13.5px; font-weight:600; height:40px; padding:0 16px; border-radius:var(--r); border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .campo{ font-family:var(--sans); font-size:14px; height:40px; padding:0 12px; border:1px solid var(--linha2); border-radius:var(--r); background:var(--sup); color:var(--tinta); width:100%; }
+    .chip{ display:inline-flex; align-items:center; gap:5px; height:23px; padding:0 9px; border-radius:999px; font-size:11.5px; font-weight:600; }
+  </style>
+</helmet>
+
+<div style="width:1180px; padding:48px 56px 56px; background:var(--papel);">
+
+  <!-- Cabeçalho / marca -->
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:40px; padding-bottom:28px; border-bottom:2px solid var(--tinta);">
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <svg width="34" height="34" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+          <rect x="2.6" y="2" width="17" height="22" rx="2.6" fill="#ffffff" stroke="#26221c" stroke-width="1.7"></rect>
+          <path d="M13.4 2h6.2v13.4l-3.1-2.3-3.1 2.3V2z" fill="#b5471f"></path>
+        </svg>
+        <span style="font-family:var(--serif); font-size:31px; font-weight:700; letter-spacing:-.022em;">Marca-Página</span>
+      </div>
+      <p style="margin:0; max-width:560px; font-size:15px; color:var(--tinta2); text-wrap:pretty;">
+        Sistema de design da biblioteca escolar. Papel morno, tinta escura, uma fita
+        terracota como identidade e uma única cor de ação. Feito para quem opera o
+        balcão de pé, com o leitor de código de barras na mão.
+      </p>
+    </div>
+    <div style="text-align:right; flex-shrink:0;">
+      <div class="rot" style="color:var(--tinta2);">Fundamentos</div>
+      <div style="font-family:var(--mono); font-size:12.5px; color:var(--tinta3); margin-top:4px;">v0.1 · set/2026</div>
+    </div>
+  </div>
+
+  <!-- PALETA -->
+  <div style="margin-top:40px;">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:18px;">
+      <h2 style="font-size:19px;">Paleta</h2>
+      <span style="font-size:13px; color:var(--tinta3);">tinta e papel primeiro; cor só onde muda uma decisão</span>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:14px;">
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#faf8f4; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Papel</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#faf8f4</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Fundo de toda tela</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#f2eee7; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Papel 2</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#f2eee7</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Faixas, cabeçalho de tabela</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#26221c; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Tinta</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#26221c</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Texto principal</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#6b6459; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Tinta 2</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#6b6459</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Apoio, legendas</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#e5dfd5; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Linha</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#e5dfd5</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Bordas e divisores</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:14px; margin-top:14px;">
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#1f5f52; border-bottom:1px solid var(--linha); display:flex; align-items:flex-end; padding:10px;">
+          <span style="color:#fff; font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;">Ação</span>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Marca</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#1f5f52</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Botão primário, foco, links</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#b5471f; border-bottom:1px solid var(--linha); display:flex; align-items:flex-end; padding:10px;">
+          <span style="color:#fff; font-size:11.5px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;">Identidade</span>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Fita</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#b5471f</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">A fita do marca-página. Nunca botão.</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#8f6410; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Atenção</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#8f6410</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Atrasado, no limite</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#9e2617; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Alerta</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#9e2617</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Bloqueio, recusa, erro</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden;">
+        <div style="height:76px; background:#2b6640; border-bottom:1px solid var(--linha);"></div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:13.5px; font-weight:600;">Certo</div>
+          <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:2px;">#2b6640</div>
+          <div style="font-size:12px; color:var(--tinta2); margin-top:6px;">Em dia, devolvido, salvo</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin:16px 0 0; font-size:12.5px; color:var(--tinta2); max-width:760px;">
+      Estado nunca é dito só pela cor: todo chip e toda faixa carrega ícone e palavra,
+      porque o balcão é operado sob pressa e às vezes em tela com brilho ruim.
+    </p>
+  </div>
+
+  <!-- TIPOGRAFIA -->
+  <div style="margin-top:44px;">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:18px;">
+      <h2 style="font-size:19px;">Tipografia</h2>
+      <span style="font-size:13px; color:var(--tinta3);">três famílias, cada uma com um trabalho</span>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
+      <div class="card" style="padding:22px 24px;">
+        <div class="rot">Títulos</div>
+        <div style="font-family:var(--serif); font-size:38px; font-weight:700; letter-spacing:-.025em; margin-top:10px; line-height:1.05;">Literata</div>
+        <div style="font-size:12.5px; color:var(--tinta2); margin-top:10px;">
+          Serifa desenhada para leitura de livro. Dá voz de biblioteca ao produto sem
+          custar nada em legibilidade.
+        </div>
+        <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:12px;">fallback: Georgia</div>
+      </div>
+      <div class="card" style="padding:22px 24px;">
+        <div class="rot">Interface</div>
+        <div style="font-size:38px; font-weight:600; letter-spacing:-.02em; margin-top:10px; line-height:1.05;">IBM Plex Sans</div>
+        <div style="font-size:12.5px; color:var(--tinta2); margin-top:10px;">
+          Rótulos, botões, tabelas. Numerais de largura constante, que é o que faz uma
+          coluna de datas não dançar.
+        </div>
+        <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:12px;">fallback: Segoe UI</div>
+      </div>
+      <div class="card" style="padding:22px 24px;">
+        <div class="rot">Códigos</div>
+        <div class="mono" style="font-size:33px; font-weight:500; letter-spacing:.01em; margin-top:12px; line-height:1.1;">000418</div>
+        <div style="font-size:12.5px; color:var(--tinta2); margin-top:10px;">
+          Tombo, ISBN e matrícula são <strong>sempre</strong> mono. É assim que a
+          operadora confere dígito a dígito contra a etiqueta.
+        </div>
+        <div class="mono" style="font-size:11.5px; color:var(--tinta3); margin-top:12px;">IBM Plex Mono</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px; padding:26px 28px; display:flex; flex-direction:column; gap:18px;">
+      <div style="display:flex; align-items:baseline; gap:20px;">
+        <span class="rot" style="width:110px; flex-shrink:0;">Display 34</span>
+        <span style="font-family:var(--serif); font-size:34px; font-weight:700; letter-spacing:-.022em;">348 empréstimos em setembro</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:20px; border-top:1px solid var(--linha); padding-top:18px;">
+        <span class="rot" style="width:110px; flex-shrink:0;">Título 26</span>
+        <span style="font-family:var(--serif); font-size:26px; font-weight:600; letter-spacing:-.015em;">Balcão</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:20px; border-top:1px solid var(--linha); padding-top:18px;">
+        <span class="rot" style="width:110px; flex-shrink:0;">Seção 16</span>
+        <span style="font-size:16px; font-weight:600;">Ana Beatriz Rocha · 8º A</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:20px; border-top:1px solid var(--linha); padding-top:18px;">
+        <span class="rot" style="width:110px; flex-shrink:0;">Corpo 14</span>
+        <span style="font-size:14px;">2 de 3 livros em mãos · devolver até 18/09</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:20px; border-top:1px solid var(--linha); padding-top:18px;">
+        <span class="rot" style="width:110px; flex-shrink:0;">Rótulo 11</span>
+        <span class="rot" style="color:var(--tinta2);">Tombo do livro</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPONENTES -->
+  <div style="margin-top:44px;">
+    <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:18px;">
+      <h2 style="font-size:19px;">Componentes</h2>
+      <span style="font-size:13px; color:var(--tinta3);">altura de controle 40px; campo de bipagem 52px</span>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div class="card" style="padding:24px;">
+        <div class="rot" style="margin-bottom:16px;">Botões</div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+          <button class="btn" style="background:var(--marca); color:#fff;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Confirmar empréstimo
+          </button>
+          <button class="btn" style="background:var(--sup); color:var(--tinta); border-color:var(--linha2);">Cancelar</button>
+          <button class="btn" style="background:var(--sup); color:var(--alerta); border-color:#e8c4be;">Baixar exemplar</button>
+          <button class="btn" style="background:var(--marca); color:#fff; opacity:.4; cursor:not-allowed;">Confirmar</button>
+        </div>
+        <div style="font-size:12px; color:var(--tinta2); margin-top:14px;">
+          Uma ação primária por tela. O botão desabilitado é o estado normal do balcão
+          antes de o tombo ser bipado.
+        </div>
+      </div>
+
+      <div class="card" style="padding:24px;">
+        <div class="rot" style="margin-bottom:16px;">Campos</div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span class="rot" style="color:var(--tinta2);">Matrícula do aluno</span>
+            <input class="campo mono" value="2024001" style="height:52px; font-size:19px; letter-spacing:.05em; border-color:var(--marca); box-shadow:0 0 0 3px rgba(31,95,82,.15);">
+          </label>
+          <label style="display:flex; flex-direction:column; gap:6px;">
+            <span class="rot" style="color:var(--tinta2);">Tombo do livro</span>
+            <input class="campo mono" value="" placeholder="bipe a etiqueta" style="height:52px; font-size:19px;">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px; padding:24px;">
+      <div class="rot" style="margin-bottom:16px;">Estados de exemplar e de leitor</div>
+      <div style="display:flex; flex-wrap:wrap; gap:9px;">
+        <span class="chip" style="background:var(--certo-suave); color:var(--certo);">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Disponível
+        </span>
+        <span class="chip" style="background:var(--papel2); color:var(--tinta2);">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 7h11l-3-3M17 13H6l3 3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Emprestado
+        </span>
+        <span class="chip" style="background:var(--atencao-suave); color:var(--atencao);">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.9"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path></svg>
+          Atrasado 6 dias
+        </span>
+        <span class="chip" style="background:var(--fita-suave); color:var(--fita);">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6 3h8v14l-4-3-4 3V3z" fill="currentColor"></path></svg>
+          Separado para reserva
+        </span>
+        <span class="chip" style="background:var(--alerta-suave); color:var(--alerta);">
+          <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3l7.5 13.5H2.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M10 8.2v3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path><circle cx="10" cy="13.8" r=".9" fill="currentColor"></circle></svg>
+          Leitor suspenso
+        </span>
+        <span class="chip" style="background:var(--papel2); color:var(--tinta3); text-decoration:line-through;">Baixado</span>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="rot">Faixas de resultado</div>
+        <div style="display:flex; gap:10px; padding:13px 15px; border-radius:var(--r); background:var(--certo-suave); border:1px solid #c9e0d1;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--certo); margin-top:1px;" aria-hidden="true"><path d="M4 10.5l4 4 8-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          <div style="font-size:13.5px; color:#1f4a2e;">
+            <strong>Tombo 000418 emprestado a Ana Beatriz Rocha.</strong> Devolver até 18/09.
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; padding:13px 15px; border-radius:var(--r); background:var(--atencao-suave); border:1px solid #ecd7a8;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--atencao); margin-top:1px;" aria-hidden="true"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"></circle><path d="M10 6v4.3l2.8 1.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          <div style="font-size:13.5px; color:#6e4d0c;">
+            Este leitor tem 1 livro atrasado — tombo <span class="mono">000412</span>, venceu em 02/09.
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; padding:13px 15px; border-radius:var(--r); background:var(--alerta-suave); border:1px solid #ecc3bc;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--alerta); margin-top:1px;" aria-hidden="true"><path d="M10 3l7.5 13.5H2.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path><path d="M10 8.2v3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path><circle cx="10" cy="13.8" r=".85" fill="currentColor"></circle></svg>
+          <div style="font-size:13.5px; color:#7d1d11;">
+            Nenhum exemplar com o tombo <span class="mono">000999</span> nesta escola.
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:24px;">
+        <div class="rot" style="margin-bottom:14px;">A fita — quando o exemplar tem que sair da estante</div>
+        <div style="display:flex; gap:14px; padding:16px; border-radius:var(--r); background:var(--fita-suave); border:1px solid #ecccb9; border-left:4px solid var(--fita);">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" style="flex-shrink:0; color:var(--fita);" aria-hidden="true"><path d="M6 2h8v15l-4-3-4 3V2z" fill="currentColor"></path></svg>
+          <div>
+            <div style="font-family:var(--serif); font-size:16px; font-weight:700; color:#7d2f13;">Separe este exemplar</div>
+            <div style="font-size:13px; color:#8a3a1c; margin-top:4px;">
+              Reservado para Júlia Nogueira (9º B), que tem até 13/09 para retirar.
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px; color:var(--tinta2); margin-top:14px;">
+          É a única faixa com barra colorida e serifa. Sem ela a operadora devolve o
+          livro à estante e a fila de reserva nunca anda.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINCÍPIOS -->
+  <div style="margin-top:44px; padding-top:28px; border-top:2px solid var(--tinta);">
+    <h2 style="font-size:19px; margin-bottom:18px;">Três regras que o desenho não pode furar</h2>
+    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-family:var(--mono); font-size:12px; color:var(--fita); font-weight:600;">01</div>
+        <div style="font-size:15px; font-weight:600;">O teclado manda</div>
+        <div style="font-size:13px; color:var(--tinta2); text-wrap:pretty;">
+          Nenhum caminho do balcão exige mouse. Matrícula, Enter, tombo, Enter. O cursor
+          volta ao começo sozinho, porque o próximo aluno da fila é sempre outro.
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-family:var(--mono); font-size:12px; color:var(--fita); font-weight:600;">02</div>
+        <div style="font-size:15px; font-weight:600;">O bloqueio vem antes do livro</div>
+        <div style="font-size:13px; color:var(--tinta2); text-wrap:pretty;">
+          Suspensão e limite aparecem assim que o leitor é encontrado. Descobrir depois
+          de achar o livro é trabalho desfeito na frente do aluno.
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-family:var(--mono); font-size:12px; color:var(--fita); font-weight:600;">03</div>
+        <div style="font-size:15px; font-weight:600;">Número na tela é sempre contado</div>
+        <div style="font-size:13px; color:var(--tinta2); text-wrap:pretty;">
+          "Disponíveis" é contagem de exemplares e "atrasado" é uma data comparada com
+          hoje. Nada disso é campo guardado, então nada disso mente.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Sistema de design do Marca-Página — pranchas aprovadas em docs/design.
+ *
+ * Os tokens entram no bloco `@theme` (e não como variáveis CSS soltas)
+ * porque no Tailwind v4 é isso que faz existir o utilitário: com
+ * `--color-papel` declarado aqui, `bg-papel`, `text-papel` e
+ * `border-papel` passam a valer em qualquer tela. Variável solta
+ * obrigaria cada tela a escrever `style={{ background: 'var(--papel)' }}`
+ * ou `bg-[var(--papel)]`, e aí o hex do vizinho volta a aparecer no meio
+ * do JSX — que é exatamente o que um sistema de design existe para
+ * impedir.
+ *
+ * Papel morno, tinta escura, uma fita terracota como identidade e UMA
+ * cor de ação. Cor só onde muda uma decisão.
+ */
+@theme {
+  /* superfícies */
+  --color-papel: #faf8f4;
+  --color-papel-2: #f2eee7;
+  --color-superficie: #ffffff;
+
+  /* tinta */
+  --color-tinta: #26221c;
+  --color-tinta-2: #6b6459;
+  --color-tinta-3: #9a9287;
+
+  /* traços */
+  --color-linha: #e5dfd5;
+  --color-linha-2: #d3cbbe;
+
+  /* ação — a única cor de ação do produto */
+  --color-marca: #1f5f52;
+  --color-marca-forte: #17473d;
+  --color-marca-suave: #e7f0ed;
+
+  /* identidade: a fita do marca-página. Separar exemplar, nunca botão comum. */
+  --color-fita: #b5471f;
+  --color-fita-suave: #fbeee6;
+  --color-fita-borda: #ecccb9;
+  --color-fita-texto: #7d2f13;
+
+  /* atrasado, no limite */
+  --color-atencao: #8f6410;
+  --color-atencao-suave: #fbf1dc;
+  --color-atencao-borda: #ecd7a8;
+  --color-atencao-texto: #6e4d0c;
+
+  /* bloqueio, recusa, erro */
+  --color-alerta: #9e2617;
+  --color-alerta-suave: #fbecea;
+  --color-alerta-borda: #ecc3bc;
+  --color-alerta-texto: #7d1d11;
+
+  /* em dia, devolvido, salvo */
+  --color-certo: #2b6640;
+  --color-certo-suave: #e9f2eb;
+  --color-certo-borda: #c9e0d1;
+  --color-certo-texto: #1f4a2e;
+
+  /* raios: controle e cartão são medidas diferentes nas pranchas */
+  --radius-controle: 6px;
+  --radius-cartao: 10px;
+
+  --shadow-cartao:
+    0 1px 2px rgb(38 34 28 / 0.05), 0 10px 28px -18px rgb(38 34 28 / 0.28);
 }
 
+/*
+ * As três famílias entram com `inline` porque o valor referencia as
+ * variáveis que o next/font define no <html>: sem `inline`, o utilitário
+ * geraria `var(--font-sans)` resolvido no <html> e a fonte carregada
+ * pelo Next ficaria de fora.
+ *
+ * Cada família tem um trabalho: serifa nos títulos, sans na interface,
+ * mono em tombo/ISBN/matrícula — sempre.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--fonte-interface), "Segoe UI", system-ui, sans-serif;
+  --font-serif: var(--fonte-titulo), Georgia, "Times New Roman", serif;
+  --font-mono: var(--fonte-codigo), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  /*
+   * Não existe tema escuro desenhado, então a tela não pergunta ao
+   * sistema operacional que cor usar. `color-scheme: light` também
+   * mantém claros os controles nativos (select, scrollbar, calendário),
+   * que é onde o macOS e o Windows invertem sozinhos.
+   */
+  html {
+    color-scheme: light;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    background-color: var(--color-papel);
+    color: var(--color-tinta);
+    font-family: var(--fonte-interface), "Segoe UI", system-ui, sans-serif;
+    /* corpo 14px: é a medida das pranchas, e a operadora lê de pé */
+    font-size: 0.875rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--fonte-titulo), Georgia, "Times New Roman", serif;
+    letter-spacing: -0.014em;
+  }
+
+  /* Uma cor de link, a mesma da ação. Utilitário de cor na classe vence. */
+  a {
+    color: var(--color-marca);
+  }
+
+  a:hover {
+    color: var(--color-marca-forte);
+  }
+
+  /* Código nunca liga ligadura: 0 e O têm de sair diferentes na conferência. */
+  code,
+  kbd,
+  samp {
+    font-variant-ligatures: none;
+  }
 }

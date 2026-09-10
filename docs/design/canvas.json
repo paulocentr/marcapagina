@@ -1,0 +1,36 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1180, "h": 2400, "title": "Fundamentos — cor, tipo e componentes" },
+    { "file": "Portal.dc.html", "x": 0, "y": 2520, "w": 390, "h": 844, "title": "Portal do aluno (celular)" },
+    { "file": "Balcao.dc.html", "x": 1290, "y": 0, "w": 1440, "h": 980, "title": "Balcão — emprestar" },
+    { "file": "Devolucao.dc.html", "x": 2830, "y": 0, "w": 1440, "h": 980, "title": "Balcão — devolver" },
+    { "file": "Catalogar.dc.html", "x": 4370, "y": 0, "w": 1440, "h": 980, "title": "Catalogar por ISBN" },
+    { "file": "Acervo.dc.html", "x": 1290, "y": 1100, "w": 1440, "h": 1000, "title": "Acervo — busca e ficha da obra" },
+    { "file": "Painel.dc.html", "x": 2830, "y": 1100, "w": 1440, "h": 1040, "title": "Painel do Leitor" },
+    { "file": "Carrinho.dc.html", "x": 4370, "y": 1100, "w": 1440, "h": 1040, "title": "Carrinho da Leitura" }
+  ],
+  "annotations": [
+    {
+      "id": "direcao",
+      "x": 0,
+      "y": -170,
+      "w": 620,
+      "text": "Direção: papel morno, tinta escura, uma cor de ação (verde-tinta) e a fita terracota como identidade.\nLiterata nos títulos, IBM Plex Sans na interface, IBM Plex Mono em tombo, ISBN e matrícula.\nNão havia design system no código — globals.css ainda era o boilerplate do Next. Este é o primeiro."
+    },
+    {
+      "id": "operacao",
+      "x": 1290,
+      "y": -170,
+      "w": 560,
+      "text": "Telas de operação — o que a biblioteca usa todo dia, de pé, com o leitor de código de barras na mão.\nNenhuma delas exige mouse."
+    },
+    {
+      "id": "gestao",
+      "x": 1290,
+      "y": 1010,
+      "w": 560,
+      "text": "Telas de gestão — acervo, números para a reunião pedagógica e o carrinho que vai às salas."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}
