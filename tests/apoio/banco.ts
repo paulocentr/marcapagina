@@ -6,6 +6,8 @@ const TABELAS_EM_ORDEM = [
   'LogAuditoria',
   'TentativaLogin',
   'UsuarioPapel',
+  'InventarioItem',
+  'Inventario',
   'ObraAutor',
   'Exemplar',
   'Obra',

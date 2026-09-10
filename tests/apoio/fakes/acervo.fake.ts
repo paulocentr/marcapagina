@@ -195,6 +195,12 @@ export function criarFakeDeExemplares() {
       return porId.get(id) ?? null
     },
 
+    async listarDaObra(obraId: string): Promise<ExemplarRegistrado[]> {
+      return [...porId.values()]
+        .filter((e) => e.obraId === obraId)
+        .sort((a, b) => a.tombo.localeCompare(b.tombo))
+    },
+
     async obterPorTombo(tombo: string): Promise<ExemplarRegistrado | null> {
       return [...porId.values()].find((e) => e.tombo === tombo) ?? null
     },

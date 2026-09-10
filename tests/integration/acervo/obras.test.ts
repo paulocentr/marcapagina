@@ -66,6 +66,16 @@ describe('obras contra banco', () => {
     expect(pagina.itens.map((o) => o.titulo)).toEqual(['Grande Sertão: Veredas'])
   })
 
+  it('busca em CAIXA ALTA acha título em caixa mista', async () => {
+    await naEscola(escolaA, () =>
+      criarObra(principalDe(escolaA), { titulo: 'Dom Casmurro' }, deps),
+    )
+
+    const pagina = await naEscola(escolaA, () => buscarObras({ termo: 'CASMURRO' }, deps))
+
+    expect(pagina.itens.map((o) => o.titulo)).toEqual(['Dom Casmurro'])
+  })
+
   it('a busca funciona sem nenhuma etiqueta existir', async () => {
     // Caminho de primeira classe (spec §2.2): a etiquetagem é gradual e
     // pode nunca terminar, então buscar por título não pode depender dela.

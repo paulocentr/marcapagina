@@ -17,6 +17,8 @@ export const MODELOS_ESCOPADOS_POR_TENANT = new Set<string>([
   'Autor',
   'Obra',
   'Exemplar',
+  'Inventario',
+  'InventarioItem',
 ])
 
 export const MODELOS_FORA_DO_TENANT = new Set<string>([
