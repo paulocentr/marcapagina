@@ -166,6 +166,24 @@ test.describe('busca no acervo', () => {
     await expect(page.getByText('Nenhuma obra encontrada')).toBeVisible()
   })
 
+  test('a folha de etiquetas sai em PDF a partir da ficha', async ({ page }) => {
+    await page.goto('/painel/acervo/novo')
+    await catalogar(page, ISBN_CONHECIDO, '2')
+
+    await page.goto('/painel/acervo?termo=casmurro')
+    await page.getByRole('link', { name: /Dom Casmurro/ }).click()
+
+    const link = page.getByRole('link', { name: 'Imprimir etiquetas' })
+    await expect(link).toBeVisible()
+
+    // Buscar direto em vez de abrir aba: o que importa é que a rota
+    // devolve um PDF de verdade, autenticada pela mesma sessão.
+    const resposta = await page.request.get(String(await link.getAttribute('href')))
+    expect(resposta.status()).toBe(200)
+    expect(resposta.headers()['content-type']).toContain('application/pdf')
+    expect((await resposta.body()).subarray(0, 5).toString()).toBe('%PDF-')
+  })
+
   test('a ficha da obra mostra os exemplares e seus tombos', async ({ page }) => {
     await page.goto('/painel/acervo/novo')
     await catalogar(page, ISBN_CONHECIDO, '2')

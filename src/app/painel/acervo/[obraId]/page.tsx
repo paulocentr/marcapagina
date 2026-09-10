@@ -62,9 +62,21 @@ export default async function PaginaDaObra({
         <Dado rotulo="Páginas" valor={obra.numeroDePaginas} />
       </dl>
 
-      <h2 className="mt-8 text-lg font-medium">
-        Exemplares · {obra.exemplaresDisponiveis} de {obra.totalDeExemplares} disponível(is)
-      </h2>
+      <div className="mt-8 flex items-baseline justify-between">
+        <h2 className="text-lg font-medium">
+          Exemplares · {obra.exemplaresDisponiveis} de {obra.totalDeExemplares} disponível(is)
+        </h2>
+        {exemplares.length > 0 && (
+          <a
+            href={`/api/etiquetas?obraId=${obra.id}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm underline"
+          >
+            Imprimir etiquetas
+          </a>
+        )}
+      </div>
 
       {exemplares.length === 0 ? (
         <p className="mt-2 text-neutral-600">
