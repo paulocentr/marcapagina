@@ -1,13 +1,14 @@
 ---
 id: TASK-015
 title: Devolução com estado de conservação e avanço da fila de reserva
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 13:34'
+updated_date: '2026-09-10 17:15'
 labels:
   - circulacao
   - backend
+  - merged
 milestone: m-2
 dependencies: []
 documentation:
@@ -25,31 +26,16 @@ Tombo identifica o empréstimo → registra estado na devolução → aplica pen
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-## Progresso (2026-09-10)
+Devolução com estado de conservação, cálculo de atraso e avanço da fila de reserva.
 
-Plano da Circulação escrito (`docs/superpowers/plans/2026-09-10-circulacao.md`, 10 tarefas). Tarefas 1, 3 e 4 e a camada de regras puras mergeadas em main.
+Commits: 3112096 (devolução com penalidade e avanço da fila), 1463fbd (faixa B integrada).
 
-**Feito:** schema completo da circulação com os dois índices únicos parciais · configuração por escola com override por série resolvido campo a campo · cálculo de prazo pulando dia não letivo, com fuso da escola fixo · bloqueios do leitor · cálculo de penalidade.
+O aviso "SEPARE ESTE EXEMPLAR" na devolução é parte da definição de pronto: sem ele a operadora devolve o livro à estante e a fila de reserva nunca anda. Dano NÃO gera penalidade automática — a decisão é da coordenação.
 
-**Falta:** consulta de atrasados (T2), serviço de empréstimo (T5), devolução com avanço da fila (T6), reservas e renovação (T7), job de cron (T8), tela do balcão (T9), Carrinho da Leitura (T10).
+Evidência — medida em 10/09/2026 na árvore de c303a08:
+- npm run test:unit -> 656 testes passando (inclui devolver.test.ts)
+- npm run test:integration -> 168 testes passando (inclui circulacao/devolucao.test.ts)
+- npm run lint e npm run typecheck -> exit 0
 
-### Evidência
-
-```
-PASS   npm run lint
-PASS   npm run typecheck
-PASS   npm run test:unit
-PASS   npm run test:integration
-PASS   npm run test:e2e
-PASS   npm run build
-PASS   docker build -t marcapagina:local .
----
-RESULTADO: os sete com exit 0
-```
-
-unit 454 testes em 25 arquivos · integração 99 em 13 · e2e 16.
-
-Provado por mutação: derrubando o índice único parcial, o teste de duplo empréstimo do mesmo exemplar reprova. A suíte de prazo roda idêntica em TZ=America/Sao_Paulo, TZ=UTC e TZ=Asia/Tokyo.
-
-**NÃO verificado:** CI nunca rodou (sem remote). Nada implantado.
+NÃO verificado: e2e vermelho no repositório (TASK-028); a tela de devolução não foi aberta em navegador.
 <!-- SECTION:NOTES:END -->

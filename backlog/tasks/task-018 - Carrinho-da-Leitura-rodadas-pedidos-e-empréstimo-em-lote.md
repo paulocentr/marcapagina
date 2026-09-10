@@ -1,13 +1,14 @@
 ---
 id: TASK-018
 title: 'Carrinho da Leitura: rodadas, pedidos e empréstimo em lote'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 13:34'
+updated_date: '2026-09-10 17:16'
 labels:
   - circulacao
   - backend
+  - merged
 milestone: m-2
 dependencies: []
 documentation:
@@ -25,31 +26,16 @@ O Carrinho da Leitura é um carrinho FÍSICO ITINERANTE que circula pelas salas 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-## Progresso (2026-09-10)
+Rodadas, pedidos, sugestão do que levar, empréstimo em LOTE e lista de sugestão de compra — camada de serviço e repositório.
 
-Plano da Circulação escrito (`docs/superpowers/plans/2026-09-10-circulacao.md`, 10 tarefas). Tarefas 1, 3 e 4 e a camada de regras puras mergeadas em main.
+Commits: 74e5fb0 (serviço), 2fc86ab (repositório e integração contra banco), ac8f495 (faixa etária pura, com "não sei" em vez de zero), e578f78 (ponto de composição), 15cf28c (faixa C integrada).
 
-**Feito:** schema completo da circulação com os dois índices únicos parciais · configuração por escola com override por série resolvido campo a campo · cálculo de prazo pulando dia não letivo, com fuso da escola fixo · bloqueios do leitor · cálculo de penalidade.
+A transação é POR ALUNO, nunca global: um aluno bloqueado não derruba o lote dos outros 29. Derrubar tudo por causa de um faria a operadora desistir do lote e voltar a lançar um por um, que é exatamente o que o carrinho existe para evitar.
 
-**Falta:** consulta de atrasados (T2), serviço de empréstimo (T5), devolução com avanço da fila (T6), reservas e renovação (T7), job de cron (T8), tela do balcão (T9), Carrinho da Leitura (T10).
+Evidência — medida em 10/09/2026 na árvore de c303a08:
+- npm run test:unit -> 656 testes passando (inclui carrinho.test.ts com 47 e faixa-etaria.test.ts com 17)
+- npm run test:integration -> 168 testes passando (inclui carrinho/carrinho.test.ts e carrinho/lote.test.ts)
+- npm run lint e npm run typecheck -> exit 0
 
-### Evidência
-
-```
-PASS   npm run lint
-PASS   npm run typecheck
-PASS   npm run test:unit
-PASS   npm run test:integration
-PASS   npm run test:e2e
-PASS   npm run build
-PASS   docker build -t marcapagina:local .
----
-RESULTADO: os sete com exit 0
-```
-
-unit 454 testes em 25 arquivos · integração 99 em 13 · e2e 16.
-
-Provado por mutação: derrubando o índice único parcial, o teste de duplo empréstimo do mesmo exemplar reprova. A suíte de prazo roda idêntica em TZ=America/Sao_Paulo, TZ=UTC e TZ=Asia/Tokyo.
-
-**NÃO verificado:** CI nunca rodou (sem remote). Nada implantado.
+ESCOPO QUE FICOU FORA, de propósito: o Carrinho NÃO tem tela. A regra existe e está provada; a interface está desenhada e aprovada, mas não implementada. Card próprio: TASK-030. Este card fecha na camada de regra, não na experiência de uso.
 <!-- SECTION:NOTES:END -->

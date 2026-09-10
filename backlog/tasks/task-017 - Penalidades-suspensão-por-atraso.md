@@ -1,13 +1,14 @@
 ---
 id: TASK-017
 title: 'Penalidades: suspensão por atraso'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 13:34'
+updated_date: '2026-09-10 17:15'
 labels:
   - circulacao
   - backend
+  - merged
 milestone: m-2
 dependencies: []
 documentation:
@@ -25,31 +26,16 @@ Penalidade com início, fim, motivo e empréstimo de origem. Suspensão em dias 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-## Progresso (2026-09-10)
+Suspensão por atraso, com fator configurável por dia de atraso e teto de 60 dias.
 
-Plano da Circulação escrito (`docs/superpowers/plans/2026-09-10-circulacao.md`, 10 tarefas). Tarefas 1, 3 e 4 e a camada de regras puras mergeadas em main.
+Commits: fd6d133 (bloqueios do leitor e cálculo de penalidade, puros), 3112096 (aplicação na devolução).
 
-**Feito:** schema completo da circulação com os dois índices únicos parciais · configuração por escola com override por série resolvido campo a campo · cálculo de prazo pulando dia não letivo, com fuso da escola fixo · bloqueios do leitor · cálculo de penalidade.
+O teto existe porque 200 dias de esquecimento não podem virar três anos de castigo — a pena deixaria de ser pedagógica.
 
-**Falta:** consulta de atrasados (T2), serviço de empréstimo (T5), devolução com avanço da fila (T6), reservas e renovação (T7), job de cron (T8), tela do balcão (T9), Carrinho da Leitura (T10).
+Evidência — medida em 10/09/2026 na árvore de c303a08:
+- npm run test:unit -> 656 testes passando (inclui penalidade.test.ts, 14 testes, e bloqueios.test.ts, 12)
+- npm run test:integration -> 168 testes passando
+- npm run lint e npm run typecheck -> exit 0
 
-### Evidência
-
-```
-PASS   npm run lint
-PASS   npm run typecheck
-PASS   npm run test:unit
-PASS   npm run test:integration
-PASS   npm run test:e2e
-PASS   npm run build
-PASS   docker build -t marcapagina:local .
----
-RESULTADO: os sete com exit 0
-```
-
-unit 454 testes em 25 arquivos · integração 99 em 13 · e2e 16.
-
-Provado por mutação: derrubando o índice único parcial, o teste de duplo empréstimo do mesmo exemplar reprova. A suíte de prazo roda idêntica em TZ=America/Sao_Paulo, TZ=UTC e TZ=Asia/Tokyo.
-
-**NÃO verificado:** CI nunca rodou (sem remote). Nada implantado.
+NÃO verificado: e2e vermelho no repositório (TASK-028).
 <!-- SECTION:NOTES:END -->

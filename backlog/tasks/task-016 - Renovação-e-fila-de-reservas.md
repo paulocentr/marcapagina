@@ -1,10 +1,10 @@
 ---
 id: TASK-016
 title: Renovação e fila de reservas
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 13:34'
+updated_date: '2026-09-10 17:20'
 labels:
   - circulacao
   - backend
@@ -25,31 +25,13 @@ Reserva é da OBRA, não do exemplar. Fila com posição, prazo de retirada e ex
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-## Progresso (2026-09-10)
+Reservas, renovação e o job de expiração de reserva ESTÃO escritos e testados, mas estavam parados fora da linha principal — três commits na branch feat/faixa-a (6b2db9a reservas e renovação, 733c3dc job de cron expirar-reservas, 896a56b trava do UPDATE de renovação contra o banco), que nunca foi mergeada.
 
-Plano da Circulação escrito (`docs/superpowers/plans/2026-09-10-circulacao.md`, 10 tarefas). Tarefas 1, 3 e 4 e a camada de regras puras mergeadas em main.
+A branch bifurcou de main ANTES das faixas B e C, então o merge não é trivial: um merge ingênuo apaga o Carrinho, a devolução e a configuração que já estão em main. A integração está em curso na branch integra/faixa-a, com a regra "manter main inteira e somar a faixa-a".
 
-**Feito:** schema completo da circulação com os dois índices únicos parciais · configuração por escola com override por série resolvido campo a campo · cálculo de prazo pulando dia não letivo, com fuso da escola fixo · bloqueios do leitor · cálculo de penalidade.
+Falta também ligar o job na rota: JOBS_CONHECIDOS em src/app/api/cron/[job]/route.ts só tem backup-semanal, e o comentário ainda diz que os jobs chegam nos planos seguintes.
 
-**Falta:** consulta de atrasados (T2), serviço de empréstimo (T5), devolução com avanço da fila (T6), reservas e renovação (T7), job de cron (T8), tela do balcão (T9), Carrinho da Leitura (T10).
+NÃO verificado: nada desta branch passou por lint, typecheck, unit, integração ou e2e depois do merge. É exatamente o que falta para o card fechar.
 
-### Evidência
-
-```
-PASS   npm run lint
-PASS   npm run typecheck
-PASS   npm run test:unit
-PASS   npm run test:integration
-PASS   npm run test:e2e
-PASS   npm run build
-PASS   docker build -t marcapagina:local .
----
-RESULTADO: os sete com exit 0
-```
-
-unit 454 testes em 25 arquivos · integração 99 em 13 · e2e 16.
-
-Provado por mutação: derrubando o índice único parcial, o teste de duplo empréstimo do mesmo exemplar reprova. A suíte de prazo roda idêntica em TZ=America/Sao_Paulo, TZ=UTC e TZ=Asia/Tokyo.
-
-**NÃO verificado:** CI nunca rodou (sem remote). Nada implantado.
+A tela de reservas e renovação é card próprio: TASK-032. Este card fecha na regra e no job de cron.
 <!-- SECTION:NOTES:END -->

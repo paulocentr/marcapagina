@@ -1,14 +1,15 @@
 ---
 id: TASK-013
 title: Configuração de circulação por série e calendário de dias não letivos
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 13:34'
+updated_date: '2026-09-10 17:15'
 labels:
   - circulacao
   - backend
   - db
+  - merged
 milestone: m-2
 dependencies: []
 documentation:
@@ -26,31 +27,15 @@ Prazo, limite de livros simultâneos, máximo de renovações, dias de suspensã
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-## Progresso (2026-09-10)
+Configuração por escola com override por série (campo a campo, herdando o resto) e calendário de dias não letivos.
 
-Plano da Circulação escrito (`docs/superpowers/plans/2026-09-10-circulacao.md`, 10 tarefas). Tarefas 1, 3 e 4 e a camada de regras puras mergeadas em main.
+Commits: fbf6969 (configuração editável pela coordenação), fbcf69f (calendário), 44a13da (cálculo de prazo puro).
 
-**Feito:** schema completo da circulação com os dois índices únicos parciais · configuração por escola com override por série resolvido campo a campo · cálculo de prazo pulando dia não letivo, com fuso da escola fixo · bloqueios do leitor · cálculo de penalidade.
+Evidência — medida em 10/09/2026 na árvore de c303a08, Postgres em Docker local:
+- npm run lint -> exit 0
+- npm run typecheck -> exit 0
+- npm run test:unit -> 32 arquivos, 656 testes, todos passando
+- npm run test:integration -> 20 arquivos, 168 testes, todos passando
 
-**Falta:** consulta de atrasados (T2), serviço de empréstimo (T5), devolução com avanço da fila (T6), reservas e renovação (T7), job de cron (T8), tela do balcão (T9), Carrinho da Leitura (T10).
-
-### Evidência
-
-```
-PASS   npm run lint
-PASS   npm run typecheck
-PASS   npm run test:unit
-PASS   npm run test:integration
-PASS   npm run test:e2e
-PASS   npm run build
-PASS   docker build -t marcapagina:local .
----
-RESULTADO: os sete com exit 0
-```
-
-unit 454 testes em 25 arquivos · integração 99 em 13 · e2e 16.
-
-Provado por mutação: derrubando o índice único parcial, o teste de duplo empréstimo do mesmo exemplar reprova. A suíte de prazo roda idêntica em TZ=America/Sao_Paulo, TZ=UTC e TZ=Asia/Tokyo.
-
-**NÃO verificado:** CI nunca rodou (sem remote). Nada implantado.
+NÃO verificado: npm run test:e2e está VERMELHO no repositório (7 passam, 10 falham) por perda de sessão em Server Action — ver TASK-028. A falha não toca configuração nem calendário, mas o gate completo não está verde e isso está dito aqui de propósito. Build e docker build não foram rodados nesta rodada.
 <!-- SECTION:NOTES:END -->

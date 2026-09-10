@@ -1,13 +1,14 @@
 ---
 id: TASK-014
 title: 'Balcão: empréstimo com bloqueios e liberação forçada auditada'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 13:34'
+updated_date: '2026-09-10 17:15'
 labels:
   - circulacao
   - backend
+  - merged
 milestone: m-2
 dependencies: []
 documentation:
@@ -25,31 +26,22 @@ Fluxo que roda dezenas de vezes por dia — teclado, sem exigir mouse. Matrícul
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-## Progresso (2026-09-10)
+Empréstimo no balcão com bloqueios, liberação forçada justificada e auditada, e a TELA.
 
-Plano da Circulação escrito (`docs/superpowers/plans/2026-09-10-circulacao.md`, 10 tarefas). Tarefas 1, 3 e 4 e a camada de regras puras mergeadas em main.
+Commits: d961967 (consulta de atrasados e empréstimo no balcão), 9510e2c (repositório do balcão contra o banco), c303a08 (tela, buscarLeitorParaBalcao e ponto de composição da circulação).
 
-**Feito:** schema completo da circulação com os dois índices únicos parciais · configuração por escola com override por série resolvido campo a campo · cálculo de prazo pulando dia não letivo, com fuso da escola fixo · bloqueios do leitor · cálculo de penalidade.
+Duas garantias de fluxo que são requisito da spec §5.1, não conforto:
+- os bloqueios são mostrados ANTES do campo do livro;
+- depois de emprestar o cursor volta para a MATRÍCULA, não para o tombo.
 
-**Falta:** consulta de atrasados (T2), serviço de empréstimo (T5), devolução com avanço da fila (T6), reservas e renovação (T7), job de cron (T8), tela do balcão (T9), Carrinho da Leitura (T10).
+A justificativa de liberação sobre bloqueio é obrigatória e fica na auditoria com nome e hora.
 
-### Evidência
+Evidência — medida em 10/09/2026 na árvore de c303a08:
+- npm run lint -> exit 0
+- npm run typecheck -> exit 0
+- npm run test:unit -> 656 testes passando (inclui balcao-consulta.test.ts, 10 testes)
+- npm run test:integration -> 168 testes passando (inclui circulacao/emprestar.test.ts)
+- índice único parcial de empréstimo ativo provado POR MUTAÇÃO: removida a proteção, o teste reprova
 
-```
-PASS   npm run lint
-PASS   npm run typecheck
-PASS   npm run test:unit
-PASS   npm run test:integration
-PASS   npm run test:e2e
-PASS   npm run build
-PASS   docker build -t marcapagina:local .
----
-RESULTADO: os sete com exit 0
-```
-
-unit 454 testes em 25 arquivos · integração 99 em 13 · e2e 16.
-
-Provado por mutação: derrubando o índice único parcial, o teste de duplo empréstimo do mesmo exemplar reprova. A suíte de prazo roda idêntica em TZ=America/Sao_Paulo, TZ=UTC e TZ=Asia/Tokyo.
-
-**NÃO verificado:** CI nunca rodou (sem remote). Nada implantado.
+NÃO verificado: a tela nunca foi aberta num navegador. Não há e2e cobrindo o balcão, e a suíte e2e existente está vermelha (TASK-028). O visual será refeito contra o kit aprovado (TASK-029).
 <!-- SECTION:NOTES:END -->
