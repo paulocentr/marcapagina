@@ -7,6 +7,12 @@ import type {
   FiltroDeBusca,
   PaginaDeObras,
 } from '@/modules/acervo/obras.service'
+import type {
+  RepositorioDeExemplares,
+  ExemplarRegistrado,
+  DadosParaCriarExemplares,
+  SituacaoDoExemplar,
+} from '@/modules/acervo/exemplares.service'
 
 // Fake em memória do repositório de autores. Conta as chamadas porque
 // "não faz N+1" é uma regra que o serviço promete e que só um contador
@@ -149,4 +155,78 @@ export function criarFakeDeObras() {
   }
 
   return fake satisfies RepositorioDeObras & Record<string, unknown>
+}
+
+// Fake em memória do repositório de exemplares. O tombo aqui é
+// simplesmente sequencial: a garantia real, sob concorrência, é do
+// repositório de banco e está coberta por teste de integração.
+export function criarFakeDeExemplares() {
+  const porId = new Map<string, ExemplarRegistrado>()
+  let proximo = 1
+
+  const fake = {
+    todos: () => [...porId.values()],
+    definirSituacao(id: string, situacao: SituacaoDoExemplar) {
+      const e = porId.get(id)
+      if (e) porId.set(id, { ...e, situacao })
+    },
+
+    async criarSequencial(dados: DadosParaCriarExemplares): Promise<ExemplarRegistrado[]> {
+      const criados: ExemplarRegistrado[] = []
+      for (let i = 0; i < dados.quantidade; i++) {
+        const exemplar: ExemplarRegistrado = {
+          id: `exe_${proximo}`,
+          obraId: dados.obraId,
+          tombo: String(proximo).padStart(6, '0'),
+          estado: dados.estado ?? 'BOM',
+          situacao: 'DISPONIVEL',
+          localizacaoId: dados.localizacaoId ?? null,
+          origem: dados.origem ?? 'COMPRA',
+          observacao: null,
+        }
+        porId.set(exemplar.id, exemplar)
+        criados.push(exemplar)
+        proximo += 1
+      }
+      return criados
+    },
+
+    async obter(id: string): Promise<ExemplarRegistrado | null> {
+      return porId.get(id) ?? null
+    },
+
+    async obterPorTombo(tombo: string): Promise<ExemplarRegistrado | null> {
+      return [...porId.values()].find((e) => e.tombo === tombo) ?? null
+    },
+
+    async atualizarSituacao(
+      id: string,
+      situacao: SituacaoDoExemplar,
+      observacao: string,
+    ): Promise<ExemplarRegistrado | null> {
+      const atual = porId.get(id)
+      if (!atual) return null
+      const atualizado = { ...atual, situacao, observacao }
+      porId.set(id, atualizado)
+      return atualizado
+    },
+
+    async contarPorSituacao(obraId: string): Promise<Record<SituacaoDoExemplar, number>> {
+      const zerado = {
+        DISPONIVEL: 0,
+        EMPRESTADO: 0,
+        RESERVADO: 0,
+        EM_CARRINHO: 0,
+        EM_MANUTENCAO: 0,
+        EXTRAVIADO: 0,
+        BAIXADO: 0,
+      }
+      for (const e of porId.values()) {
+        if (e.obraId === obraId) zerado[e.situacao] += 1
+      }
+      return zerado
+    },
+  }
+
+  return fake satisfies RepositorioDeExemplares & Record<string, unknown>
 }
