@@ -48,6 +48,7 @@ export interface RepositorioDeExemplares {
    */
   criarSequencial(dados: DadosParaCriarExemplares): Promise<ExemplarRegistrado[]>
   obter(exemplarId: string): Promise<ExemplarRegistrado | null>
+  listarDaObra(obraId: string): Promise<ExemplarRegistrado[]>
   obterPorTombo(tombo: string): Promise<ExemplarRegistrado | null>
   atualizarSituacao(
     exemplarId: string,
@@ -135,6 +136,17 @@ export async function baixarExemplar(
   if (!atualizado) throw new ExemplarInexistenteError()
 
   return atualizado
+}
+
+/**
+ * Os exemplares de uma obra, em ordem de tombo — que é a ordem em que
+ * estão na estante e na folha de etiquetas.
+ */
+export async function listarExemplaresDaObra(
+  obraId: string,
+  deps: DependenciasDeExemplares,
+): Promise<ExemplarRegistrado[]> {
+  return deps.exemplares.listarDaObra(obraId)
 }
 
 /**

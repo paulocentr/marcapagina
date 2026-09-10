@@ -100,6 +100,14 @@ export const exemplaresRepository: RepositorioDeExemplares = {
     }) as unknown as Promise<ExemplarRegistrado | null>
   },
 
+  async listarDaObra(obraId: string): Promise<ExemplarRegistrado[]> {
+    return dbDoTenant().exemplar.findMany({
+      where: { obraId },
+      select: CAMPOS,
+      orderBy: { tombo: 'asc' },
+    }) as unknown as Promise<ExemplarRegistrado[]>
+  },
+
   async obterPorTombo(tombo: string): Promise<ExemplarRegistrado | null> {
     return dbDoTenant().exemplar.findFirst({
       where: { tombo },
