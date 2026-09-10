@@ -42,6 +42,15 @@ export interface RepositorioDeReservas {
   listarComRetiradaVencida(hoje: Date): Promise<ReservaNaFila[]>
   mudarStatus(reservaId: string, status: StatusDaReserva): Promise<void>
   obter(reservaId: string): Promise<ReservaNaFila | null>
+  /**
+   * A fila VIVA da obra, em ordem de chegada — quem espera e quem já tem
+   * exemplar separado.
+   *
+   * Acrescentado depois do contrato original (Tarefa 7). A tela do balcão
+   * precisa mostrar a fila inteira para responder "sou o quantos?" na
+   * frente do aluno, e `proximaDaFila` responde só pelo primeiro.
+   */
+  listarFila(obraId: string): Promise<ReservaNaFila[]>
 }
 
 export interface DependenciasDeReservas {

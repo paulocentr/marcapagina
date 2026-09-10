@@ -1,4 +1,24 @@
 import { dbDoTenant } from '@/core/db/tenant-extension'
+import { prisma } from '@/core/db/client'
+
+/**
+ * As escolas que os jobs de manutenção precisam varrer.
+ *
+ * Sai pelo cliente CRU, não pelo `dbDoTenant()`: quem chama é o cron, que
+ * acorda FORA de qualquer tenant — é justamente a lista que ele usa para
+ * entrar em um de cada vez. Escola é a raiz do tenant e o único modelo
+ * sem `escolaId`, então não há escopo a aplicar aqui.
+ *
+ * Inativa fica de fora: escola desligada não deve ter reserva expirando
+ * nem e-mail saindo em nome dela.
+ */
+export function listarEscolasAtivas(): Promise<{ id: string; slug: string }[]> {
+  return prisma.escola.findMany({
+    where: { ativa: true },
+    select: { id: true, slug: true },
+    orderBy: { slug: 'asc' },
+  })
+}
 
 // Versão do formato: um backup restaurado meses depois, quando o schema
 // já mudou, precisa dizer de que época ele é. Incrementar sempre que a
