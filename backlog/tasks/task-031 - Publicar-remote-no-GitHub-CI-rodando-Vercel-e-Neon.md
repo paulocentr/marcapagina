@@ -1,12 +1,13 @@
 ---
 id: TASK-031
 title: 'Publicar: remote no GitHub, CI rodando, Vercel e Neon'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 17:18'
-updated_date: '2026-09-10 20:21'
+updated_date: '2026-09-10 20:54'
 labels:
   - infra
+  - prod
 milestone: m-0
 dependencies: []
 priority: high
@@ -34,20 +35,29 @@ O deploy tem de continuar portátil: output standalone e Dockerfile versionados,
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
-PARTE DO GITHUB FEITA em 10/09/2026: https://github.com/paulocentr/marcapagina — público, conta paulocentr.
+PUBLICADO em 10/09/2026. Site https://marcapagina-escola.vercel.app · código https://github.com/paulocentr/marcapagina (público, conta paulocentr).
 
-O CI executou pela PRIMEIRA VEZ (nunca havia rodado, por não haver remote) e passou verde em 3m37s. Roda a cada push: lint, typecheck, unit, prisma migrate deploy, integration, build, playwright install, e2e, docker build. Sobe o próprio Postgres e usa segredos descartáveis rotulados como tal — não depende de nada configurado no GitHub.
+GITHUB: repositório criado e CI executando a cada push. Rodou pela PRIMEIRA VEZ nesta sessão (nunca havia rodado, por não haver remote) e passa verde: lint, typecheck, unit, prisma migrate deploy, integration, build, playwright install, e2e, docker build. O CI sobe o próprio Postgres e usa segredos descartáveis — não depende de nada configurado no GitHub.
 
-TRÊS COISAS QUE A PRIMEIRA EXECUÇÃO REVELOU E FORAM CORRIGIDAS:
-1. O e2e NÃO rodava no CI. É o único gate que exercita a build de produção com navegador, e foi ele que pegou o prefetch de /sair apagando a sessão — bug que lint, typecheck e unidade não veriam nunca. Ter a suíte verde na máquina local e ausente no CI era ter a rede de segurança no chão.
-2. Com o e2e no CI, ele REPROVOU de primeira: o route announcer do Next duplica o texto do <h1>, e getByText("Ana Souza") casava com dois elementos. Verde local, vermelho no CI — corrida, não sorte. Escopado ao <main>.
-3. actions/checkout@v4 e setup-node@v4 forçavam Node 20 depreciado. Subiram para v5.
+NEON: projeto marcapagina em aws-sa-east-1 (São Paulo, perto da escola), Postgres 18. Cinco migrations aplicadas pela conexão DIRETA; o runtime na Vercel usa a conexão POOLER, que é o certo para serverless. O schema não tem directUrl, então isso foi resolvido por variável na hora da migração, sem alterar código.
 
-ARMADILHA ENCONTRADA ANTES DE EMPURRAR: havia DUAS contas logadas no gh e a ATIVA era paulowagercasino. Um push teria ido para a conta errada em silêncio. Trocada para paulocentr, e a regra ficou registrada no CLAUDE.md.
+VERCEL: projeto marcapagina, quatro variáveis de produção (DATABASE_URL no pooler, SESSION_SECRET e CRON_SECRET gerados na hora, ESCOLA_PADRAO_SLUG). Os dois crons do vercel.json ficam dentro do limite do Hobby.
 
-VERIFICADO ANTES DO PUSH, porque o repositório é público: .env está gitignored, .env.example tem os segredos vazios, nenhum arquivo de segredo rastreado, nenhum segredo literal no que está versionado.
+Evidência — verificação em PRODUÇÃO, não local:
+- rota de cron: 401 sem segredo, 401 com segredo errado, 200 com o certo devolvendo escolasProcessadas: 1. Isso prova Prisma conectado ao Neon lendo a tabela de escolas, e prova a comparação de segredo em tempo constante.
+- navegador de verdade (Playwright contra a URL pública): login da coordenação chega em /painel; menu com Painel, Balcão, Acervo, Catalogar por ISBN, Reservas, Carrinho da Leitura; as cinco telas renderizam com h1 correto; login do aluno chega em /aluno com "Olá, Ana Souza"; ZERO erro de JS na página.
+- curl cru de fora, sem credencial: HTTP 200 sem redirect, conteúdo é a nossa tela.
 
-O QUE FALTA, e depende do Paulo: Vercel e Neon travam num login interativo que eu não consigo completar. Ele roda `npx vercel login` e `npx neonctl auth` uma vez, e daí em diante o resto é automatizável — criar projeto, banco, variáveis de ambiente e deploy. Não pedi token colado em conversa de propósito: segredo em conversa fica no histórico.
+DUAS ARMADILHAS ENCONTRADAS E FECHADAS:
+1. Havia DUAS contas logadas no gh e a ATIVA era paulowagercasino. Um push teria ido para a conta errada em silêncio.
+2. O repositório é público e a senha do seed está nele. Semear produção com ela deixaria qualquer leitor do repositório entrar no sistema ao vivo. O seed ganhou SEED_SENHA_STAFF (padrão intacto, para o CI e o e2e não quebrarem) e produção foi semeada com senha gerada na hora.
 
-Antes de subir com aluno REAL: TASK-025 (base legal LGPD) tem de estar resolvido. São dados de menores.
+EU ERREI UMA MEDIÇÃO no caminho, e vale registrar: afirmei que o site estava alcançável de fora porque um curl -L devolveu 200. Era 200 da PÁGINA DE LOGIN DA VERCEL — o -L seguiu o redirect e eu li o código da página errada. O SSO da Vercel estava ligado. Descoberto pelo POST, que devolveu 302 para vercel.com/sso-api. Desligado com autorização do Paulo.
+
+NÃO VERIFICADO / PENDENTE:
+- a senha do banco do Neon apareceu na saída do CLI e está no histórico da sessão. RECOMENDADO ROTACIONAR.
+- o deploy é MANUAL (vercel --prod). Git não foi conectado de propósito: a Vercel implantaria a cada push sem esperar o CI, e o gate verde é a regra da casa.
+- marcapagina.vercel.app já está tomado por outro projeto; o endereço é marcapagina-escola.vercel.app.
+- nenhum backup do Neon foi testado; a rota de exportação existe mas não foi exercitada em produção.
+- ambiente de preview e staging não existem: só produção.
 <!-- SECTION:NOTES:END -->

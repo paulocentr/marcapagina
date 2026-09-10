@@ -25,8 +25,11 @@ máquina local com Postgres em Docker:
 | `build` | exit 0 |
 | `docker build` | exit 0 |
 
-**O código está no GitHub e o CI roda de verdade:**
-https://github.com/paulocentr/marcapagina (público, conta `paulocentr`).
+**ESTÁ NO AR:** https://marcapagina-escola.vercel.app
+**Código:** https://github.com/paulocentr/marcapagina (público, conta `paulocentr`)
+
+Credenciais da demonstração em `~/marcapagina-acesso.txt` (fora do repositório).
+`marcapagina.vercel.app` **não** está disponível — pertence a outro projeto.
 
 O workflow estava escrito e versionado há dias sem nunca ter executado; agora
 executa a cada push e passa verde, com `lint · typecheck · unit · migrate ·
@@ -38,9 +41,29 @@ GitHub.
 máquina, vermelho lá: era teste frágil (ver a armadilha do route announcer
 abaixo). É o primeiro retorno concreto de publicar.
 
-**Ainda NÃO existe Vercel nem Neon.** Os dois travam num login interativo que só
-o Paulo pode completar: `npx vercel login` e `npx neonctl auth`. Depois disso o
-resto é automatizável. Card: TASK-031.
+**Neon:** projeto `marcapagina` em `aws-sa-east-1` (São Paulo), Postgres 18.
+Migrations vão pela conexão **direta**; o runtime na Vercel usa a **pooler**, que
+é o certo para serverless. O schema não tem `directUrl`, então isso se resolve por
+variável na hora de migrar, sem alterar código.
+
+**O deploy é MANUAL (`vercel --prod`), de propósito.** Git NÃO foi conectado à
+Vercel: ela implantaria a cada push sem esperar o CI, e a regra da casa é gate
+verde antes de subir. Se algum dia conectar, ponha o CI como required check.
+
+**Só existe produção.** Não há preview nem staging.
+
+### O seed em ambiente público
+
+`SEED_SENHA_STAFF` sobrescreve a senha do staff. O padrão continua
+`SenhaForte#2026` porque é o que o CI e o E2E esperam — **não mude o padrão.**
+
+A variável existe porque **este repositório é público e a senha do seed está
+nele**: semear um ambiente alcançável pela internet com ela deixaria qualquer
+pessoa que lê o repositório entrar no sistema ao vivo. Produção foi semeada com
+senha gerada na hora.
+
+A matrícula e a data de nascimento do aluno de demonstração **são públicas** —
+estão no repositório. Serve para demonstrar; não é acesso de aluno real.
 
 **Circulação (m-2) COMPLETA — as 10 tarefas**
 (`docs/superpowers/plans/2026-09-10-circulacao.md`).
