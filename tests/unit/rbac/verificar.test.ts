@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { temPermissao, exigirPermissao } from '@/core/rbac/verificar'
+import {
+  temPermissao,
+  exigirPermissao,
+  exigirQualquerPermissao,
+} from '@/core/rbac/verificar'
 import { SemPermissaoError, NaoAutenticadoError } from '@/core/errors'
 import type { Principal } from '@/core/auth/principal'
 
@@ -65,5 +69,50 @@ describe('exigirPermissao', () => {
       expect(erro).toBeInstanceOf(SemPermissaoError)
       expect((erro as SemPermissaoError).permissao).toBe('config:editar')
     }
+  })
+})
+
+describe('exigirQualquerPermissao', () => {
+  // Existe para ações que são passo interno de mais de um fluxo. Cadastrar
+  // um autor acontece tanto ao criar obra quanto ao editar: exigir só
+  // 'obra:criar' impediria quem tem apenas 'obra:editar' de corrigir a
+  // autoria de uma ficha — uma recusa que ninguém entenderia.
+  it('passa quando o principal tem UMA das permissões', () => {
+    expect(() => exigirQualquerPermissao(STAFF, ['obra:criar', 'emprestimo:criar'])).not.toThrow()
+  })
+
+  it('passa quando tem mais de uma', () => {
+    expect(() =>
+      exigirQualquerPermissao(STAFF, ['emprestimo:criar', 'emprestimo:devolver']),
+    ).not.toThrow()
+  })
+
+  it('lança SemPermissaoError quando não tem nenhuma', () => {
+    expect(() => exigirQualquerPermissao(STAFF, ['obra:criar', 'obra:editar'])).toThrow(
+      SemPermissaoError,
+    )
+  })
+
+  it('o erro nomeia a primeira permissão exigida, para a mensagem não sair vazia', () => {
+    try {
+      exigirQualquerPermissao(STAFF, ['obra:criar', 'obra:editar'])
+      throw new Error('deveria ter lançado')
+    } catch (erro) {
+      expect((erro as SemPermissaoError).permissao).toBe('obra:criar')
+    }
+  })
+
+  it('lança NaoAutenticadoError quando não há principal', () => {
+    expect(() => exigirQualquerPermissao(null, ['obra:ver'])).toThrow(NaoAutenticadoError)
+  })
+
+  it('lança SemPermissaoError para aluno', () => {
+    expect(() => exigirQualquerPermissao(ALUNO, ['obra:ver'])).toThrow(SemPermissaoError)
+  })
+
+  it('lista vazia é erro de programação, não passe livre', () => {
+    // Uma lista vazia significaria "qualquer uma de nenhuma", que só pode
+    // ser bug. Deixar passar transformaria o engano em autorização.
+    expect(() => exigirQualquerPermissao(STAFF, [])).toThrow()
   })
 })

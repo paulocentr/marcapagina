@@ -20,3 +20,29 @@ export function exigirPermissao(
   if (!principal) throw new NaoAutenticadoError()
   if (!temPermissao(principal, permissao)) throw new SemPermissaoError(permissao)
 }
+
+/**
+ * Exige QUALQUER uma das permissões da lista.
+ *
+ * Existe para ações que são passo interno de mais de um fluxo. Cadastrar
+ * um autor acontece tanto ao criar obra quanto ao editar: exigir só
+ * `obra:criar` impediria quem tem apenas `obra:editar` de corrigir a
+ * autoria de uma ficha — uma recusa que ninguém entenderia.
+ */
+export function exigirQualquerPermissao(
+  principal: Principal | null,
+  permissoes: readonly Permissao[],
+): asserts principal is PrincipalStaff {
+  if (permissoes.length === 0) {
+    // "Qualquer uma de nenhuma" só pode ser bug do chamador. Deixar passar
+    // transformaria o engano em autorização concedida.
+    throw new Error('exigirQualquerPermissao recebeu lista vazia de permissões.')
+  }
+
+  if (!principal) throw new NaoAutenticadoError()
+  if (!permissoes.some((p) => temPermissao(principal, p))) {
+    // Nomeia a primeira: a mensagem ao usuário é genérica de qualquer
+    // forma, e o campo serve para o log dizer o que faltava.
+    throw new SemPermissaoError(permissoes[0]!)
+  }
+}
