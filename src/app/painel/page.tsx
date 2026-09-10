@@ -24,6 +24,12 @@ interface Atalho {
 // para de explorar o sistema.
 const ATALHOS: Atalho[] = [
   {
+    titulo: 'Balcão',
+    descricao: 'Emprestar e devolver — matrícula, tombo, confirma',
+    href: '/painel/balcao',
+    permissao: 'emprestimo:criar',
+  },
+  {
     titulo: 'Acervo',
     descricao: 'Buscar livros por título e ver os exemplares de cada obra',
     href: '/painel/acervo',
@@ -97,8 +103,8 @@ function EmConstrucao({ principal }: { principal: PrincipalStaff }) {
     <section className="mt-10 rounded border border-dashed border-neutral-300 p-5">
       <h2 className="font-medium">Ainda em construção</h2>
       <p className="mt-1 text-sm text-neutral-600">
-        O balcão de empréstimo e devolução, as reservas e o Carrinho da Leitura estão sendo
-        implementados. As regras já existem e estão testadas; falta a tela.
+        As reservas e o Carrinho da Leitura ainda não têm tela. As regras já existem e estão
+        testadas.
       </p>
     </section>
   )
