@@ -28,6 +28,8 @@ model Escola {
   autores       Autor[]
   obras         Obra[]
   exemplares    Exemplar[]
+  inventarios   Inventario[]
+  itensDeInventario InventarioItem[]
 }
 
 // ─── Acesso ────────────────────────────────────────────────────────────
@@ -214,8 +216,9 @@ model Localizacao {
   estante    String?
   prateleira String?
 
-  escola     Escola     @relation(fields: [escolaId], references: [id])
-  exemplares Exemplar[]
+  escola      Escola       @relation(fields: [escolaId], references: [id])
+  exemplares  Exemplar[]
+  inventarios Inventario[]
 
   @@unique([escolaId, nome])
   @@index([escolaId])
@@ -301,9 +304,66 @@ model Exemplar {
   // recusado. Cascade transformaria um clique errado em acervo apagado.
   obra        Obra         @relation(fields: [obraId], references: [id], onDelete: Restrict)
   localizacao Localizacao? @relation(fields: [localizacaoId], references: [id])
+  itensDeInventario InventarioItem[]
 
   @@unique([escolaId, tombo])
   @@index([escolaId])
   @@index([escolaId, obraId])
   @@index([escolaId, situacao])
+}
+
+// ─── Inventário (spec §4.5, §5.7) ──────────────────────────────────────
+enum StatusDoInventario {
+  ABERTO
+  FECHADO
+  CANCELADO
+}
+
+enum TipoDeDivergencia {
+  NAO_ENCONTRADO
+  FORA_DO_LUGAR
+  CONSTA_EMPRESTADO
+}
+
+model Inventario {
+  id       String  @id @default(cuid())
+  escolaId String
+  // Nulo = acervo inteiro. A conferência por localização é o caso comum:
+  // a operadora percorre UMA estante por vez.
+  localizacaoId   String?
+  responsavelId   String
+  responsavelNome String
+  status          StatusDoInventario @default(ABERTO)
+  iniciadoEm      DateTime           @default(now())
+  fechadoEm       DateTime?
+
+  escola      Escola           @relation(fields: [escolaId], references: [id])
+  localizacao Localizacao?     @relation(fields: [localizacaoId], references: [id])
+  itens       InventarioItem[]
+
+  @@index([escolaId])
+  @@index([escolaId, status])
+}
+
+model InventarioItem {
+  id           String  @id @default(cuid())
+  escolaId     String
+  inventarioId String
+  exemplarId   String
+  // A situação no momento da abertura. Guardada porque é ela que decide,
+  // no fechamento, se um exemplar ausente é perda ou empréstimo em curso
+  // — e a situação de hoje já mudou quando o inventário fecha.
+  situacaoNaAbertura String
+  conferido          Boolean   @default(false)
+  conferidoEm        DateTime?
+  localizacaoEncontradaId String?
+  divergencia             TipoDeDivergencia?
+
+  escola     Escola     @relation(fields: [escolaId], references: [id])
+  inventario Inventario @relation(fields: [inventarioId], references: [id], onDelete: Cascade)
+  exemplar   Exemplar   @relation(fields: [exemplarId], references: [id], onDelete: Restrict)
+
+  @@unique([inventarioId, exemplarId])
+  @@index([escolaId])
+  @@index([inventarioId, conferido])
 }
