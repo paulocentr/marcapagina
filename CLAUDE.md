@@ -8,15 +8,53 @@ acoplado ao código)
 
 ---
 
-## ESTADO ATUAL (2026-09-09)
+## ESTADO ATUAL (2026-09-10)
 
-**Nenhuma linha de código de aplicação foi escrita ainda.** O repositório contém
-apenas documentação, o board e o `.git`. Design e planejamento estão prontos e
-aprovados; a implementação ainda não começou.
+**A Fundação está implementada e mergeada em `main`.** As 13 tarefas do plano m-0
+foram executadas em TDD, cada uma com o teste falhando antes da implementação.
 
-**Onde paramos exatamente:** o plano da Fundação está escrito e aprovado. Paulo foi
-perguntado como quer executá-lo — subagentes (um agente novo por tarefa, com revisão
-entre elas) ou inline nesta sessão — e **a resposta ainda não veio**. Retomar por aí.
+Verificação final do plano — os sete comandos, exit code conferido um a um:
+`lint` · `typecheck` · `test:unit` (88) · `test:integration` (33) · `test:e2e` (5) ·
+`build` · `docker build`. Todos com exit 0, em máquina local com Postgres em Docker.
+
+**Nada foi implantado.** Não há remote no repositório, então o CI do GitHub Actions
+nunca rodou — o workflow está escrito e versionado, mas nenhuma execução foi
+observada. Não existe projeto na Vercel nem banco Neon. Antes de qualquer promessa de
+staging ou produção, é isso que falta.
+
+**Próximo passo:** escrever o plano do milestone `Acervo` (m-1) — ele é escrito agora,
+no início da sua fase, porque as assinaturas de que ele depende passaram a existir.
+
+### Como rodar
+
+```bash
+docker compose up -d db
+cp .env.example .env            # preencher SESSION_SECRET e CRON_SECRET
+npx prisma migrate deploy && npm run db:seed
+npm run dev
+```
+
+Seed: staff `coord@escola.br` / `SenhaForte#2026`; aluno matrícula `2024001`,
+nascimento `2012-03-15`.
+
+### Decisões de implementação que o plano não previa
+
+Cada uma está no corpo do commit que a introduziu, com o motivo:
+
+- **O filtro de tenant entra por `AND`, não sobrescrevendo a chave.** Sobrescrever
+  transformava "me dê o registro do vizinho" em "tome OUTRO registro" — silenciosamente.
+- **A extensão de tenant é fail-closed:** operação que ela não sabe escopar lança
+  `OperacaoNaoEscopavelError`. Um `default` permissivo transformava cada operação nova
+  do Prisma em porta aberta (foi assim que `updateManyAndReturn` vazou).
+- **O `data` de toda escrita tem `escolaId` reescrito.** Escopar só o `where` impede
+  alcançar o registro do vizinho, não impede empurrar o próprio para lá.
+- **`npm start` sobe `.next/standalone/server.js`**, não `next start` — que o Next
+  avisa não funcionar com `output: 'standalone'`. O E2E testa o que se entrega.
+- **`typecheck` roda `next typegen` antes do `tsc`** por causa do `typedRoutes`.
+- **O E2E semeia o banco no `globalSetup`**, porque `test:integration` dá TRUNCATE e a
+  verificação final roda integração antes do e2e.
+- **Versões:** `next` 15.5.25 (o 15.5.4 do plano tem CVE) e `vitest` ^3.2 (a config do
+  plano usa `test.projects`, que não existe no 2.1).
 
 ### Documentos que governam o trabalho
 

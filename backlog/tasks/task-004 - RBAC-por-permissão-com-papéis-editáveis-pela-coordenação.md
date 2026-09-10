@@ -4,10 +4,11 @@ title: 'RBAC por permissão, com papéis editáveis pela coordenação'
 status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 12:00'
+updated_date: '2026-09-10 12:01'
 labels:
   - rbac
   - backend
+  - merged
 milestone: m-0
 dependencies: []
 documentation:
