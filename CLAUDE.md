@@ -22,8 +22,22 @@ nunca rodou — o workflow está escrito e versionado, mas nenhuma execução fo
 observada. Não existe projeto na Vercel nem banco Neon. Antes de qualquer promessa de
 staging ou produção, é isso que falta.
 
-**Próximo passo:** escrever o plano do milestone `Acervo` (m-1) — ele é escrito agora,
-no início da sua fase, porque as assinaturas de que ele depende passaram a existir.
+**Acervo (m-1) em andamento.** O plano está escrito
+(`docs/superpowers/plans/2026-09-10-acervo.md`, 11 tarefas) e as três primeiras estão
+mergeadas em `main`: os dois gates novos, o schema completo do acervo com migration, e
+autores/categorias/localizações.
+
+**Próximo passo: Tarefa 4 do plano do Acervo — o serviço de Obras.** Depois vêm
+exemplares com tombo sequencial (Tarefa 5) e os provedores de ISBN (Tarefa 6), que são
+o caminho crítico do projeto.
+
+### Decisão 13 — autorização sem HTTP no serviço
+
+A Fundação afirmava que serviço não conhece HTTP e, na mesma lista, que todo serviço
+protegido chama `requirePermission` — que lê cookie. Não fechava. **Vale agora:** o
+serviço recebe `Principal` por parâmetro e chama `exigirPermissao`, que é puro. Quem lê
+a sessão é a rota, com `requireStaff()`. Dois gates no CI travam isso e o `fetch` fora
+de `src/infra/`.
 
 ### Como rodar
 
