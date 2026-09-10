@@ -30,13 +30,23 @@ function paraFila(linha: Linha): ReservaNaFila {
   return { ...linha, status: linha.status as StatusDaReserva }
 }
 
+// Ordem de chegada, com desempate por data de criação. A posição é lida e
+// gravada em transações diferentes, então duas reservas simultâneas de
+// alunos diferentes ainda podem nascer com a MESMA posição — e aí o
+// `orderBy` por posição sozinho devolveria a fila em ordem arbitrária,
+// diferente a cada consulta. O desempate torna a fila estável mesmo
+// quando o empate acontece.
+function ordemDaFila(): Prisma.ReservaOrderByWithRelationInput[] {
+  return [{ posicao: 'asc' }, { criadaEm: 'asc' }]
+}
+
 export const reservasRepository: RepositorioDeReservas = {
   async proximaDaFila(obraId: string): Promise<ReservaNaFila | null> {
     const linha = (await dbDoTenant().reserva.findFirst({
       where: { obraId, status: 'AGUARDANDO' },
       // Ordem de chegada. Sem o `posicao asc` a fila viraria loteria e a
       // promessa de "quem esperou mais leva primeiro" deixaria de valer.
-      orderBy: { posicao: 'asc' },
+      orderBy: ordemDaFila(),
       select: CAMPOS,
     })) as Linha | null
 
@@ -124,6 +134,19 @@ export const reservasRepository: RepositorioDeReservas = {
     })) as Linha | null
 
     return linha ? paraFila(linha) : null
+  },
+
+  async listarFila(obraId: string): Promise<ReservaNaFila[]> {
+    const linhas = (await dbDoTenant().reserva.findMany({
+      // Viva = espera ou já tem exemplar separado. A atendida saiu da
+      // fila com o livro na mão e mostrá-la faria a tela contar gente que
+      // não está mais esperando.
+      where: { obraId, status: { in: ['AGUARDANDO', 'DISPONIVEL'] } },
+      orderBy: ordemDaFila(),
+      select: CAMPOS,
+    })) as Linha[]
+
+    return linhas.map(paraFila)
   },
 }
 
