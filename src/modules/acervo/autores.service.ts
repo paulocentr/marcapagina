@@ -1,4 +1,5 @@
-import { exigirPermissao } from '@/core/rbac/verificar'
+import { exigirQualquerPermissao } from '@/core/rbac/verificar'
+import { normalizarParaBusca } from '@/core/texto/normalizar'
 import type { Principal } from '@/core/auth/principal'
 
 export interface AutorRegistrado {
@@ -21,17 +22,10 @@ export interface DependenciasDeAutores {
 // mais lido conta a mesma autora duas vezes, que é justamente o relatório
 // que justificou modelar autor como entidade em vez de campo texto.
 //
-// O intervalo removido é só o dos diacríticos combinantes (U+0300–U+036F),
-// que a decomposição NFD separa da letra. Um regex mais largo — [^a-z ],
-// por exemplo — apagaria nomes inteiros em cirílico ou japonês e faria
-// todos eles colidirem num único registro vazio.
+// É a mesma normalização usada no título da obra. Uma implementação só:
+// duas cópias divergem na primeira correção feita em apenas uma delas.
 export function normalizarNomeDeAutor(nome: string): string {
-  return nome
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim()
+  return normalizarParaBusca(nome)
 }
 
 /**
@@ -44,7 +38,10 @@ export async function garantirAutores(
   nomes: string[],
   deps: DependenciasDeAutores,
 ): Promise<string[]> {
-  exigirPermissao(principal, 'obra:criar')
+  // Criar ou editar obra: cadastrar o autor é passo interno dos dois, e
+  // exigir só 'obra:criar' impediria quem tem apenas 'obra:editar' de
+  // corrigir a autoria de uma ficha já cadastrada.
+  exigirQualquerPermissao(principal, ['obra:criar', 'obra:editar'])
 
   const normalizados = nomes.map(normalizarNomeDeAutor)
   const distintos = [...new Set(normalizados.filter((n) => n.length > 0))]
