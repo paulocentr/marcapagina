@@ -81,6 +81,34 @@ describe('Global Constraint 4: serviços não conhecem HTTP', () => {
   })
 })
 
+describe('Global Constraint 13: serviço não lê sessão', () => {
+  const servicos = listarArquivos(RAIZ).filter((a) => a.endsWith('.service.ts'))
+
+  it.each(servicos)('%s não importa guards nem sessao', (arquivo) => {
+    const imports = linhasDeImport(readFileSync(arquivo, 'utf8'))
+    const proibidos = imports.filter((l) => /@\/core\/auth\/(guards|sessao)/.test(l))
+
+    expect(
+      proibidos,
+      `${path.relative(RAIZ, arquivo)} lê a sessão. O serviço recebe Principal por ` +
+        `parâmetro e chama exigirPermissao — é o que o mantém testável sem HTTP.\n${proibidos.join('\n')}`,
+    ).toEqual([])
+  })
+})
+
+describe('Global Constraint 14: fetch só em src/infra', () => {
+  const foraDeInfra = listarArquivos(RAIZ).filter((a) => !a.startsWith(path.join(RAIZ, 'infra')))
+
+  it.each(foraDeInfra)('%s não chama fetch direto', (arquivo) => {
+    const conteudo = readFileSync(arquivo, 'utf8')
+    expect(
+      /(^|[^.\w])fetch\s*\(/.test(conteudo),
+      `${path.relative(RAIZ, arquivo)} chama fetch. Provedores externos moram em ` +
+        `src/infra e chegam ao serviço por injeção — senão testar o fallback exige rede.`,
+    ).toBe(false)
+  })
+})
+
 describe('modelos com escolaId estão declarados como escopados', () => {
   const CAMINHO_SCHEMA = path.resolve(AQUI, '../../prisma/schema.prisma')
 
