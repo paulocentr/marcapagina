@@ -1,6 +1,7 @@
 import { prisma } from '@/core/db/client'
 import { tenantAtual } from '@/core/tenant/context'
 import { MODELOS_ESCOPADOS_POR_TENANT } from '@/core/db/modelos-tenant'
+import { OperacaoNaoEscopavelError } from '@/core/errors'
 
 type Args = Record<string, unknown>
 type Delegate = Record<string, (args: Args) => Promise<unknown>>
@@ -12,6 +13,13 @@ type Delegate = Record<string, (args: Args) => Promise<unknown>>
 const CONVERTE_PARA_FIND_FIRST: Record<string, string> = {
   findUnique: 'findFirst',
   findUniqueOrThrow: 'findFirstOrThrow',
+}
+
+// update e delete exigem where único; a variante *Many aceita qualquer
+// filtro e é o que permite acrescentar o tenant sem abrir mão da garantia.
+const CONVERTE_PARA_MANY: Record<string, string> = {
+  update: 'updateMany',
+  delete: 'deleteMany',
 }
 
 function delegateDe(model: string): Delegate {
@@ -36,6 +44,26 @@ function comTenantNoData(args: Args, escolaId: string): Args {
     return { ...args, data: data.map((d) => ({ ...(d as object), escolaId })) }
   }
   return { ...args, data: { ...(data as object), escolaId } }
+}
+
+// Escopar o WHERE de um update impede alcançar o registro do vizinho, mas
+// não impede EMPURRAR o próprio registro para lá: basta mandar
+// `data: { escolaId: <vizinho> }` e o dado muda de dono, entregue pela
+// porta da frente a quem só tinha permissão de editá-lo. Por isso o data
+// de toda escrita tem o escolaId reescrito para o tenant corrente.
+function semTrocaDeDono(data: unknown, escolaId: string): unknown {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return data
+  if (!('escolaId' in data)) return data
+  return { ...data, escolaId }
+}
+
+function comDataSaneada(args: Args, escolaId: string): Args {
+  if (!('data' in args)) return args
+  const data = args.data
+  if (Array.isArray(data)) {
+    return { ...args, data: data.map((d) => semTrocaDeDono(d, escolaId)) }
+  }
+  return { ...args, data: semTrocaDeDono(data, escolaId) }
 }
 
 // O where de findUnique pode trazer chave composta aninhada
@@ -80,21 +108,24 @@ export function dbDoTenant() {
             case 'count':
             case 'aggregate':
             case 'groupBy':
-            case 'updateMany':
             case 'deleteMany':
               return query(comTenantNoWhere(entrada, escolaId))
 
+            case 'updateMany':
+            case 'updateManyAndReturn':
+              return query(comDataSaneada(comTenantNoWhere(entrada, escolaId), escolaId))
+
             case 'update':
             case 'delete': {
-              // update/delete exigem where único; converter para a variante
-              // *Many garante o filtro de tenant sem abrir mão da segurança.
-              const alvo = operation === 'update' ? 'updateMany' : 'deleteMany'
+              const alvo = CONVERTE_PARA_MANY[operation]!
               const achatado = achatarWhereComposto((entrada.where ?? {}) as Record<string, unknown>)
-              return delegateDe(model)[alvo]!(comTenantNoWhere({ ...entrada, where: achatado }, escolaId))
+              const escopado = comTenantNoWhere({ ...entrada, where: achatado }, escolaId)
+              return delegateDe(model)[alvo]!(comDataSaneada(escopado, escolaId))
             }
 
             case 'create':
             case 'createMany':
+            case 'createManyAndReturn':
               return query(comTenantNoData(entrada, escolaId))
 
             case 'upsert': {
@@ -108,12 +139,18 @@ export function dbDoTenant() {
               return query({
                 ...entrada,
                 where: { ...where, AND: [{ escolaId }] },
+                update: semTrocaDeDono(entrada.update, escolaId),
                 create: { ...(entrada.create as object), escolaId },
               } as typeof args)
             }
 
             default:
-              return query(entrada)
+              // Fail-closed. A alternativa — deixar passar o que não se
+              // sabe escopar — transforma cada operação nova do Prisma numa
+              // porta aberta que ninguém vê até o dado do vizinho aparecer
+              // na tela. Falhar alto custa um erro em desenvolvimento;
+              // deixar passar custa um vazamento em produção.
+              throw new OperacaoNaoEscopavelError(operation, model)
           }
         },
       },

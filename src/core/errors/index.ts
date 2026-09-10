@@ -14,6 +14,16 @@ export class SemTenantError extends ErroDeDominio {
   }
 }
 
+export class OperacaoNaoEscopavelError extends ErroDeDominio {
+  constructor(readonly operacao: string, readonly modelo: string) {
+    super(
+      `A extensão de tenant não sabe escopar "${operacao}" em ${modelo}. ` +
+        `Trate a operação em src/core/db/tenant-extension.ts antes de usá-la.`,
+      'OPERACAO_NAO_ESCOPAVEL',
+    )
+  }
+}
+
 export class NaoAutenticadoError extends ErroDeDominio {
   constructor() {
     super('É preciso entrar para continuar.', 'NAO_AUTENTICADO')

@@ -118,6 +118,79 @@ describe('isolamento entre tenants', () => {
     expect(criado?.escolaId).toBe(escolaA)
   })
 
+  it('update não consegue mudar o dono: escolaId no data é ignorado', async () => {
+    // Sem esta guarda, quem pode editar o próprio registro pode EMPURRÁ-LO
+    // para outra escola — entregando o dado ao vizinho pela porta da frente.
+    await executarComTenant(escolaA, () =>
+      dbDoTenant().aluno.updateMany({
+        where: { matricula: '1' },
+        data: { escolaId: escolaB, nome: 'Mudou de escola' },
+      }),
+    )
+
+    const daEscolaA = await prisma.aluno.findMany({ where: { escolaId: escolaA } })
+    expect(daEscolaA).toHaveLength(1)
+    expect(daEscolaA[0]?.nome).toBe('Mudou de escola')
+
+    const daEscolaB = await prisma.aluno.findMany({ where: { escolaId: escolaB } })
+    expect(daEscolaB).toHaveLength(1)
+    expect(daEscolaB[0]?.nome).toBe('Bruno da Escola B')
+  })
+
+  it('upsert não consegue mudar o dono pelo ramo de update', async () => {
+    await executarComTenant(escolaA, () =>
+      dbDoTenant().aluno.upsert({
+        where: { escolaId_matricula: { escolaId: escolaA, matricula: '1' } },
+        update: { escolaId: escolaB },
+        create: { escolaId: escolaA, matricula: '1', nome: 'X', dataNascimento: new Date('2010-01-01') },
+      }),
+    )
+
+    const ana = await prisma.aluno.findFirst({ where: { nome: 'Ana da Escola A' } })
+    expect(ana?.escolaId).toBe(escolaA)
+  })
+
+  it('updateManyAndReturn não alcança registro de outro tenant', async () => {
+    // A variante *AndReturn é uma operação à parte no Prisma. Se a extensão
+    // não a tratar, ela escapa sem filtro e edita o banco inteiro.
+    const devolvidos = await executarComTenant(escolaA, () =>
+      dbDoTenant().aluno.updateManyAndReturn({
+        where: {},
+        data: { nome: 'Renomeado em massa' },
+      }),
+    )
+
+    expect(devolvidos).toHaveLength(1)
+    const bruno = await prisma.aluno.findFirst({ where: { escolaId: escolaB } })
+    expect(bruno?.nome).toBe('Bruno da Escola B')
+  })
+
+  it('createManyAndReturn carimba o tenant corrente', async () => {
+    const criados = await executarComTenant(escolaA, () =>
+      dbDoTenant().aluno.createManyAndReturn({
+        data: [
+          { escolaId: escolaB, matricula: '77', nome: 'Intruso', dataNascimento: new Date('2010-01-01') },
+        ],
+      }),
+    )
+
+    expect(criados[0]?.escolaId).toBe(escolaA)
+  })
+
+  it('operação não prevista pela extensão falha em vez de passar sem filtro', async () => {
+    // Fail-closed: uma operação que a extensão não sabe escopar tem que
+    // parar a chamada. Deixar passar transformaria cada versão nova do
+    // Prisma numa porta de vazamento aberta em silêncio.
+    await expect(
+      executarComTenant(escolaA, async () => {
+        const db = dbDoTenant() as unknown as {
+          aluno: { operacaoInventada: (args: unknown) => Promise<unknown> }
+        }
+        return db.aluno.operacaoInventada({ where: {} })
+      }),
+    ).rejects.toThrow()
+  })
+
   it('usar o banco fora do contexto de tenant é erro, não silêncio', async () => {
     expect(() => tenantAtual()).toThrow(SemTenantError)
   })
