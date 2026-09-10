@@ -4,13 +4,14 @@ title: Log de auditoria
 status: To Do
 assignee: []
 created_date: '2026-09-10 01:56'
+updated_date: '2026-09-10 02:18'
 labels:
   - backend
   - db
 milestone: m-0
 dependencies: []
 documentation:
-  - docs/superpowers/specs/2026-09-09-biblioteca-escolar-design.md
+  - docs/superpowers/plans/2026-09-09-fundacao.md
 priority: medium
 ordinal: 5000
 ---

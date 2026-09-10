@@ -128,8 +128,8 @@ Dentro: gamificação de leitura, notificações de atraso, suspensão por atras
 | Framework | Next.js 15 (App Router) + TypeScript strict |
 | ORM | Prisma |
 | Banco | Neon Postgres |
-| Auth | Auth.js v5, dois providers de credenciais |
-| Hash de senha | Argon2id |
+| Auth | Sessão própria: JWT assinado com `jose` em cookie httpOnly (ver 3.6) |
+| Hash de senha | Argon2id (`@node-rs/argon2`) |
 | UI | Tailwind CSS + shadcn/ui |
 | Validação | Zod |
 | Testes | Vitest (unidade/serviço) + Playwright (E2E) |
@@ -228,6 +228,14 @@ Papéis são editáveis pela coordenação: criar "Monitor do 9º ano" não exig
 **A checagem mora no service.** Esconder botão na UI não é autorização; a UI apenas reflete a permissão já verificada no servidor.
 
 ### 3.6 Autenticação — dois reinos
+
+**Decisão revista (2026-09-09):** a versão original desta spec fechava Auth.js v5. Trocado por uma camada de sessão própria, com aprovação de Paulo.
+
+Motivo: Auth.js v5 segue em beta há muito tempo, e o alicerce de um sistema que guarda dados de menores não é lugar para dependência beta. Além disso, os dois reinos têm formatos de principal genuinamente diferentes, e espremer os dois nos callbacks de um modelo desenhado para um só produz código torto e difícil de testar.
+
+O que se escreve é cola, não criptografia: `jose` assina e verifica o JWT, `@node-rs/argon2` faz o hash da senha, o cookie é `httpOnly` + `SameSite=Lax` + `Secure`, e as Server Actions do Next.js já validam origem. São cerca de 200 linhas, cobertas por teste de unidade sem banco.
+
+O que se abre mão: login social pronto. Não está no escopo e, se um dia entrar, é aditivo.
 
 | Reino | Credencial | Sessão |
 |---|---|---|
