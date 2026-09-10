@@ -1,9 +1,9 @@
 import { dbDoTenant } from '@/core/db/tenant-extension'
 import { balcaoRepository } from '@/modules/circulacao/balcao.repository'
-import { emprestimosRepository } from '@/modules/circulacao/emprestimos.repository'
 import type {
   RepositorioDeConsultaDoBalcao,
   LeitorParaBalcao,
+  LivroEmMaos,
 } from '@/modules/circulacao/balcao.service'
 import type { ConfiguracaoDaEscola, OverrideDeSerie } from '@/modules/circulacao/configuracao'
 
@@ -52,12 +52,45 @@ export const consultaDoBalcaoRepository: RepositorioDeConsultaDoBalcao = {
     return balcaoRepository.overridesPorSerie()
   },
 
-  contarAtivosDoAluno(alunoId: string): Promise<number> {
-    return emprestimosRepository.contarAtivosDoAluno(alunoId)
+  diasNaoLetivos(): Promise<Set<string>> {
+    return balcaoRepository.diasNaoLetivos()
   },
 
-  contarAtrasadosDoAluno(alunoId: string, hoje: Date): Promise<number> {
-    return emprestimosRepository.contarAtrasadosDoAluno(alunoId, hoje)
+  /**
+   * Os livros que o leitor está com ele, numa consulta só.
+   *
+   * Tombo e título vêm no mesmo SELECT, atravessando exemplar → obra.
+   * Resolvê-los depois, por livro, seria um N+1 numa tela que a
+   * operadora abre dezenas de vezes por dia — e o leitor com três livros
+   * custaria sete idas ao banco em vez de uma.
+   *
+   * Não devolve NENHUM campo chamado "atrasado". Devolve `previstaPara`,
+   * que é o fato; a decisão é do serviço (Global Constraint 16). O filtro
+   * `devolvidaEm: null` é o que faz "em mãos" significar em mãos.
+   */
+  async livrosEmMaos(alunoId: string): Promise<LivroEmMaos[]> {
+    const linhas = await dbDoTenant().emprestimo.findMany({
+      where: { alunoId, devolvidaEm: null },
+      // Do vencimento mais próximo para o mais distante: a operadora lê a
+      // trilha de cima para baixo, e o que já venceu tem de estar em cima.
+      orderBy: { previstaPara: 'asc' },
+      select: {
+        id: true,
+        exemplarId: true,
+        previstaPara: true,
+        renovacoes: true,
+        exemplar: { select: { tombo: true, obra: { select: { titulo: true } } } },
+      },
+    })
+
+    return linhas.map((linha) => ({
+      emprestimoId: linha.id,
+      exemplarId: linha.exemplarId,
+      tombo: linha.exemplar.tombo,
+      tituloDaObra: linha.exemplar.obra.titulo,
+      previstaPara: linha.previstaPara,
+      renovacoes: linha.renovacoes,
+    }))
   },
 }
 

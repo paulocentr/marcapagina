@@ -126,3 +126,71 @@ function meiaNoiteUtcDoDiaLocal(data: Date): Date {
   // en-CA formata como aaaa-mm-dd, que é exatamente o que se quer.
   return new Date(`${FORMATADOR_DE_DIA.format(data)}T00:00:00.000Z`)
 }
+
+const FORMATADOR_DE_OFFSET = new Intl.DateTimeFormat('en-US', {
+  timeZone: FUSO_DA_ESCOLA,
+  timeZoneName: 'longOffset',
+})
+
+/**
+ * A janela de INSTANTES que forma um dia de trabalho da escola.
+ *
+ * `inicio` inclusivo, `fim` exclusivo. Serve para as consultas que
+ * filtram por hora cheia — "atendidos hoje", "devolvidos hoje", o
+ * histórico do balcão — e não por coluna `@db.Date`.
+ *
+ * Existe porque o dia UTC e o dia da escola são dias diferentes durante
+ * três horas: às 21h em São Paulo já é o dia seguinte em UTC. Contar por
+ * dia UTC zeraria o contador de devoluções do dia com a operadora ainda
+ * no balcão — o contador apagaria o trabalho dela na frente dela. E
+ * contar pelo fuso do PROCESSO daria respostas diferentes na máquina da
+ * secretaria e no servidor da Vercel, que é o bug que ninguém reproduz.
+ */
+export function intervaloDoDiaDaEscola(instante: Date): { inicio: Date; fim: Date } {
+  const dia = FORMATADOR_DE_DIA.format(instante)
+  // Aritmética de CALENDÁRIO sobre o dia já resolvido: "o dia seguinte a
+  // 30/09 é 01/10". Somar 24 horas ao instante e reformatar daria o dia
+  // errado justamente no dia em que o fuso muda de deslocamento.
+  const diaSeguinte = somarDias(new Date(`${dia}T00:00:00.000Z`), 1)
+    .toISOString()
+    .slice(0, 10)
+
+  return {
+    inicio: instanteDaMeiaNoiteNaEscola(dia),
+    fim: instanteDaMeiaNoiteNaEscola(diaSeguinte),
+  }
+}
+
+/** O instante exato em que a meia-noite de um dia acontece na escola. */
+function instanteDaMeiaNoiteNaEscola(diaIso: string): Date {
+  // O deslocamento é lido AO MEIO-DIA do dia em questão. Meio-dia nunca
+  // cai dentro do salto de horário de verão, então a leitura não escolhe
+  // o lado errado da hora que muda. (O Brasil não tem mais horário de
+  // verão, mas o dia em que voltar não pode ser o dia em que isto quebra.)
+  const meioDia = new Date(`${diaIso}T12:00:00.000Z`)
+  const instante = new Date(`${diaIso}T00:00:00.000${offsetDaEscolaEm(meioDia)}`)
+
+  if (Number.isNaN(instante.getTime())) {
+    // Falhar alto: um intervalo inválido devolveria zero movimento e a
+    // tela diria "nenhum atendimento hoje" num dia cheio.
+    throw new Error(`Não consegui montar a meia-noite da escola para ${diaIso}.`)
+  }
+
+  return instante
+}
+
+/** O deslocamento do fuso da escola, no formato `-03:00`. */
+function offsetDaEscolaEm(instante: Date): string {
+  const parte = FORMATADOR_DE_OFFSET.formatToParts(instante).find(
+    (p) => p.type === 'timeZoneName',
+  )
+
+  if (!parte) {
+    throw new Error(`Não consegui ler o fuso ${FUSO_DA_ESCOLA} nesta plataforma.`)
+  }
+
+  // `longOffset` devolve "GMT-03:00" — e "GMT" seco quando o
+  // deslocamento é zero, caso em que a string vazia não serviria.
+  const offset = parte.value.replace('GMT', '')
+  return offset === '' ? '+00:00' : offset
+}

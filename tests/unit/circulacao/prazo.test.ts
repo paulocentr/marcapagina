@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   calcularDataDeDevolucao,
   ehFimDeSemana,
+  intervaloDoDiaDaEscola,
   CalendarioImpossivelError,
 } from '@/modules/circulacao/prazo'
 
@@ -108,5 +109,53 @@ describe('calcularDataDeDevolucao', () => {
     })()
 
     expect(erro?.message).toMatch(/calendário/i)
+  })
+})
+
+describe('intervaloDoDiaDaEscola', () => {
+  it('vai da meia-noite da escola à meia-noite seguinte', () => {
+    // São Paulo é UTC-3: o dia 10 na escola começa às 03:00Z do dia 10 e
+    // termina às 03:00Z do dia 11.
+    const { inicio, fim } = intervaloDoDiaDaEscola(new Date('2026-09-10T12:00:00.000Z'))
+
+    expect(inicio.toISOString()).toBe('2026-09-10T03:00:00.000Z')
+    expect(fim.toISOString()).toBe('2026-09-11T03:00:00.000Z')
+  })
+
+  it('às 23h na escola o dia ainda é o de hoje', () => {
+    // 02:00Z do dia 11 é 23:00 do dia 10 em São Paulo. Contar por dia UTC
+    // faria "devolvidos hoje" zerar às 21h com a operadora ainda no
+    // balcão — e ela veria o contador apagar o próprio trabalho.
+    const { inicio, fim } = intervaloDoDiaDaEscola(new Date('2026-09-11T02:00:00.000Z'))
+
+    expect(inicio.toISOString()).toBe('2026-09-10T03:00:00.000Z')
+    expect(fim.toISOString()).toBe('2026-09-11T03:00:00.000Z')
+  })
+
+  it('logo depois da meia-noite da escola já é o dia seguinte', () => {
+    const { inicio } = intervaloDoDiaDaEscola(new Date('2026-09-11T03:30:00.000Z'))
+
+    expect(inicio.toISOString()).toBe('2026-09-11T03:00:00.000Z')
+  })
+
+  it('o fim é EXCLUSIVO: o instante do fim já é o dia seguinte', () => {
+    const { fim } = intervaloDoDiaDaEscola(new Date('2026-09-10T12:00:00.000Z'))
+    const seguinte = intervaloDoDiaDaEscola(fim)
+
+    expect(seguinte.inicio.toISOString()).toBe(fim.toISOString())
+  })
+
+  it('a janela tem exatamente 24 horas num dia sem virada de horário', () => {
+    const { inicio, fim } = intervaloDoDiaDaEscola(new Date('2026-09-10T12:00:00.000Z'))
+
+    expect(fim.getTime() - inicio.getTime()).toBe(24 * 60 * 60 * 1000)
+  })
+
+  it('não depende do fuso do processo', () => {
+    // O mesmo instante, escrito de dois jeitos, tem de dar a mesma janela.
+    const comOffset = intervaloDoDiaDaEscola(new Date('2026-09-10T09:00:00-03:00'))
+    const emUtc = intervaloDoDiaDaEscola(new Date('2026-09-10T12:00:00.000Z'))
+
+    expect(comOffset.inicio.toISOString()).toBe(emUtc.inicio.toISOString())
   })
 })

@@ -8,6 +8,8 @@ import { emprestimosRepository } from '@/modules/circulacao/emprestimos.reposito
 import { configuracaoRepository } from '@/modules/circulacao/configuracao.repository'
 import { calendarioRepository } from '@/modules/circulacao/calendario.repository'
 import { consultaDoBalcaoRepository } from '@/modules/circulacao/balcao-consulta.repository'
+import { painelDoBalcaoRepository } from '@/modules/circulacao/painel-do-balcao.repository'
+import { exemplarDoBalcaoRepository } from '@/modules/circulacao/exemplar-do-balcao.repository'
 import { emprestimosEmCursoRepository } from '@/modules/circulacao/emprestimos-em-curso.repository'
 import { obrasDaFilaRepository } from '@/modules/circulacao/obras-da-fila.repository'
 import type { DependenciasDoBalcao } from '@/modules/circulacao/emprestar.service'
@@ -16,6 +18,8 @@ import type { DependenciasDeEmprestimos } from '@/modules/circulacao/emprestimos
 import type { DependenciasDeConfiguracao } from '@/modules/circulacao/configuracao.service'
 import type { DependenciasDoCalendario } from '@/modules/circulacao/calendario.service'
 import type { DependenciasDeConsultaDoBalcao } from '@/modules/circulacao/balcao.service'
+import type { DependenciasDoPainelDoBalcao } from '@/modules/circulacao/painel-do-balcao.service'
+import type { DependenciasDeExemplarDoBalcao } from '@/modules/circulacao/exemplar-do-balcao.service'
 import type { DependenciasDeReserva } from '@/modules/circulacao/reservas.service'
 import type { DependenciasDeRenovacao } from '@/modules/circulacao/renovar.service'
 
@@ -39,10 +43,18 @@ export function dependenciasDaCirculacao(): DependenciasDoBalcao &
   DependenciasDeEmprestimos &
   DependenciasDeConfiguracao &
   DependenciasDoCalendario &
-  DependenciasDeConsultaDoBalcao {
+  DependenciasDeConsultaDoBalcao &
+  DependenciasDoPainelDoBalcao &
+  DependenciasDeExemplarDoBalcao {
   return {
     balcao: balcaoRepository,
     consultaDoBalcao: consultaDoBalcaoRepository,
+    // Os painéis e a bipagem de tombo entram no MESMO pacote da tela do
+    // balcão: são consultas da mesma requisição de gente logada, e um
+    // segundo ponto de composição só para elas obrigaria a rota a montar
+    // dois pacotes para desenhar uma tela.
+    painelDoBalcao: painelDoBalcaoRepository,
+    exemplarDoBalcao: exemplarDoBalcaoRepository,
     devolucao: devolucaoRepository,
     penalidades: penalidadesRepository,
     reservas: reservasRepository,
