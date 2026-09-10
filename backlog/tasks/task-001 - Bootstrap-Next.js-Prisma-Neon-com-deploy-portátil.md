@@ -1,10 +1,10 @@
 ---
 id: TASK-001
 title: Bootstrap Next.js + Prisma + Neon com deploy portátil
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 02:18'
+updated_date: '2026-09-10 11:30'
 labels:
   - infra
   - backend
