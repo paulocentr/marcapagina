@@ -31,10 +31,25 @@ ISBN via Google Books + Open Library em cascata · catalogação em série atôm
 tela em que o cursor volta ao campo de ISBN · etiquetas A4 em PDF · inventário com as
 três listas · importador de planilha (alunos como uso primário).
 
-**Próximo passo: escrever o plano do milestone `Circulação` (m-2)** — empréstimo,
-devolução, renovação, reservas, penalidades e Carrinho da Leitura. Escreva-o agora, no
-início da fase: as assinaturas de que ele depende (Exemplar, situação, tombo) já
-existem.
+**Circulação (m-2) em andamento** (`docs/superpowers/plans/2026-09-10-circulacao.md`,
+10 tarefas). Em `main`: schema completo com os dois índices únicos parciais, e a
+**camada de regras puras** — configuração por série, cálculo de prazo, bloqueios do
+leitor e penalidade. Nenhuma delas toca banco, e é isso que permite provar o balcão
+inteiro numa suíte de milissegundos.
+
+**Próximo passo: Tarefa 2 (consulta de atrasados) e Tarefa 5 (serviço de empréstimo).**
+Depois: devolução com avanço da fila (6), reservas e renovação (7), cron (8), tela do
+balcão (9), Carrinho da Leitura (10).
+
+### Duas coisas da circulação que é fácil desfazer sem perceber
+
+- **Não existe campo "atrasado".** É sempre `previstaPara < hoje AND devolvidaEm IS
+  NULL`. Um campo materializado mente todo dia em que o cron falhar — e mente na
+  direção pior, dizendo que está tudo em ordem.
+- **O fuso da escola é fixo em `prazo.ts`, não o do processo.** Depender do fuso do
+  processo faz o mesmo empréstimo vencer em dias diferentes na máquina da secretaria
+  (São Paulo) e no servidor (UTC na Vercel). A suíte de prazo roda idêntica em três
+  fusos; se mexer, rode `TZ=UTC` e `TZ=Asia/Tokyo` também.
 
 ### Garantias provadas por MUTAÇÃO — se mexer nelas, refaça a mutação
 
@@ -47,6 +62,7 @@ confirmando que o teste reprova:
 | Transação na catalogação | fica obra órfã de exemplar |
 | Transação na importação | importação parcial grava os alunos |
 | `drawText` do tombo | a etiqueta sai em branco |
+| Índice único parcial de empréstimo ativo | o mesmo exemplar é emprestado duas vezes |
 
 ### Duas escolhas de dependência que divergem do plano, de propósito
 
