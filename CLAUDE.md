@@ -271,6 +271,31 @@ spec antes de propor mudar.
 
 ---
 
+## Git — SOMENTE a conta `paulocentr`
+
+**Decisão do Paulo, 2026-09-10: toda operação de git neste projeto é pela conta
+`paulocentr`. Sem rodapé de co-autoria, sem link de sessão, sem mais nada — só
+`paulocentr`.**
+
+Já está configurado, e ficou assim:
+
+| onde | valor |
+|---|---|
+| `git config user.name` (local) | `paulocentr` |
+| `git config user.email` (local) | `2635233+paulocentr@users.noreply.github.com` |
+| `.claude/settings.json` | `attribution.commit` e `attribution.pr` vazios, `sessionUrl` false |
+
+**A armadilha que isso fecha:** havia DUAS contas logadas no `gh`, e a ativa era
+`paulowagercasino`. Qualquer `git push` ou `gh repo create` teria ido para a
+conta errada em silêncio. A ativa passou a ser `paulocentr`
+(`gh auth switch --user paulocentr`), mas **`gh` guarda isso fora do
+repositório** — se você abrir outra sessão e o `gh auth status` mostrar outra
+conta ativa, troque antes de tocar no remoto.
+
+Confira com `git log -1 --format='%an <%ae>'` antes de empurrar qualquer coisa.
+
+---
+
 ## Regras de código
 
 As invariantes completas estão em **Global Constraints** no plano da Fundação. As que
