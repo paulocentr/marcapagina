@@ -1,8 +1,9 @@
-# Sistema de Gestão de Biblioteca Escolar — Design
+# Marca-Página — Sistema de Gestão de Biblioteca Escolar
 
 **Data:** 2026-09-09
 **Status:** aprovado, aguardando plano de implementação
 **Origem:** especificação "Fase 2 — Alinhamento com a Empresa de Programação", escrita pela coordenação da escola, ampliada em sessão de brainstorming.
+**Nome de produto:** Marca-Página · `marcapagina.vercel.app` (nome de trabalho, não acoplado ao código)
 
 ---
 
@@ -11,6 +12,11 @@
 A biblioteca de uma escola opera hoje sem sistema. A coordenação pediu a digitalização do processo e escreveu uma especificação com três módulos: cadastro de obras, gestão de empréstimos e um painel de relatórios.
 
 Este documento amplia aquela especificação para um sistema web completo de gestão de biblioteca escolar, com portal de autoatendimento para alunos, controle de acesso baseado em permissões e arquitetura em camadas service-repository.
+
+**A escola atende Fundamental e Médio** — do 1º ano ao 3º do Médio. Essa é a faixa etária mais ampla possível numa escola, e ela impõe duas consequências que atravessam o sistema:
+
+- A configuração de circulação **precisa** de override por série. Um aluno do 2º ano e um do 3º do Médio não levam a mesma quantidade de livros nem pelo mesmo prazo, e um único valor global tornaria a regra errada para as duas pontas.
+- O portal do aluno tem que servir uma criança de 7 anos e um adolescente de 17 sem parecer infantil para um nem complicado para o outro. Linguagem neutra e direta, hierarquia visual forte, nada de mascote. A gamificação usa progresso e conquista, não desenho animado.
 
 **Quem usa:**
 
@@ -82,7 +88,30 @@ Toda tabela carrega `escolaId`. A escola da coordenação é o tenant #1.
 
 Custo hoje: pequeno. Custo de retrofitar depois: schema inteiro e todas as queries.
 
-### 2.6 Escopo v1 confirmado
+### 2.6 O acervo será catalogado do zero
+
+Confirmado: **não existe catálogo em lugar nenhum** — nem planilha, nem software, nem ficha. Tudo será cadastrado do zero.
+
+Isso promove a **busca por ISBN a caminho crítico do projeto**, não a conveniência. É literalmente a diferença entre catalogar o acervo em semanas ou em meses, e é o único fator que pode fazer o sistema nunca sair do papel: um sistema de biblioteca sem acervo cadastrado não tem função.
+
+Consequências para a implementação:
+
+- A busca por ISBN consulta **Google Books e Open Library, com fallback entre elas** — nenhuma das duas cobre o catálogo brasileiro sozinha, especialmente livros didáticos e literatura infantojuvenil nacional.
+- Quando ambas falham, o cadastro manual precisa ser rápido: formulário enxuto, autores e editoras com autocomplete a partir do que já existe no acervo, e repetição do último valor para os campos que se repetem em lote.
+- Existe **modo de catalogação em série**: bipa ISBN → confere → salva → o cursor volta para o campo de ISBN. Sem navegar menu entre um livro e outro.
+- Cadastrar a obra e gerar N exemplares de uma vez, já com tombos sequenciais e etiquetas prontas para impressão.
+
+O importador de planilha continua no escopo, mas seu uso primário passa a ser **a importação de alunos**, e não o acervo. Ele permanece útil para o acervo em duas hipóteses: se aparecer alguma lista parcial, e para outras escolas no futuro, dado que o sistema é multi-tenant.
+
+### 2.7 Entrega: sistema completo antes da primeira demonstração
+
+Paulo optou por entregar o sistema inteiro de uma vez, e não em fatias apresentadas à coordenação conforme ficam prontas.
+
+Isso **não** significa construir em ordem arbitrária. A ordem de construção continua sendo por camadas de dependência (fundação → acervo → circulação → portal → relatórios), e cada fase termina verificada. O que muda é que não há entrega parcial para a usuária final: ela vê o Marca-Página quando ele estiver inteiro.
+
+**Consequência a assumir conscientemente:** o feedback da coordenação chega no fim, e não durante. O contrapeso é esta spec — as decisões de produto foram tomadas aqui, por escrito, antes do código. Onde a spec estiver errada sobre a realidade da biblioteca, o erro só aparece na demonstração.
+
+### 2.8 Escopo v1 confirmado
 
 Dentro: gamificação de leitura, notificações de atraso, suspensão por atraso, inventário de acervo, importação por planilha, geração de PDFs, auditoria, exportação/backup, PWA.
 
@@ -311,9 +340,13 @@ Aluno busca no acervo, reserva, entra na fila. Ao ficar disponível, recebe noti
 
 ### 5.5 Cadastro de acervo
 
-**Por ISBN:** digita ou bipa o ISBN → consulta Google Books e Open Library → preenche título, autores, editora, ano, capa e sinopse → a operadora confere e salva. Sem isso, catalogar milhares de livros à mão é inviável.
+O acervo será catalogado do zero (§2.6), então este fluxo é o caminho crítico do projeto inteiro.
 
-**Por planilha:** upload, mapeamento de colunas, preview com validação linha a linha, deduplicação por ISBN, importação transacional. O mesmo importador serve para alunos.
+**Por ISBN, em série:** bipa ou digita o ISBN → consulta Google Books, com fallback para Open Library → preenche título, autores, editora, ano, capa e sinopse → a operadora confere e salva → **o cursor volta ao campo de ISBN**. Sem navegar menu entre um livro e o próximo. Na mesma tela, gerar N exemplares com tombos sequenciais.
+
+**Quando as duas APIs falham** — comum em didático e infantojuvenil nacional — o formulário manual precisa ser enxuto, com autocomplete de autor e editora a partir do acervo já cadastrado e repetição do último valor nos campos que se repetem em lote.
+
+**Por planilha:** upload, mapeamento de colunas, preview com validação linha a linha, deduplicação por ISBN, importação transacional. Uso primário é **importar alunos**; para acervo, serve a listas parciais que apareçam e a outras escolas no futuro.
 
 ### 5.6 Rodada do Carrinho da Leitura
 
