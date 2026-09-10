@@ -36,7 +36,14 @@ async function main() {
     where: { escolaId_nome: { escolaId: escola.id, nome: 'COORDENACAO' } },
   })
 
-  const senhaHash = await hash('SenhaForte#2026', {
+  // O padrão é a senha que o CI e o E2E esperam — não mude.
+  //
+  // `SEED_SENHA_STAFF` existe porque o repositório é PÚBLICO: semear um
+  // ambiente alcançável pela internet com a senha que está no README
+  // deixaria qualquer pessoa que lê o repositório entrar no sistema.
+  // Em produção, gere uma e passe por aqui.
+  const senhaDoStaff = process.env.SEED_SENHA_STAFF ?? 'SenhaForte#2026'
+  const senhaHash = await hash(senhaDoStaff, {
     algorithm: ARGON2ID,
     memoryCost: 19_456,
     timeCost: 2,
@@ -94,7 +101,11 @@ async function main() {
   })
 
   console.log(`Seed pronta. Escola "${escola.nome}" (${slug}).`)
-  console.log('Staff: coord@escola.br / SenhaForte#2026')
+  console.log(
+    process.env.SEED_SENHA_STAFF
+      ? 'Staff: coord@escola.br / (senha passada por SEED_SENHA_STAFF)'
+      : 'Staff: coord@escola.br / SenhaForte#2026',
+  )
   console.log('Aluno: matrícula 2024001 / nascimento 2012-03-15')
 }
 
