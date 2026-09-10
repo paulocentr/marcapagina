@@ -5,9 +5,41 @@ import { dependenciasDaCirculacao } from '@/modules/circulacao/circulacao.deps'
 import { buscarLeitorParaBalcao } from '@/modules/circulacao/balcao.service'
 import { emprestar, BloqueiosDoLeitorError } from '@/modules/circulacao/emprestar.service'
 import { devolver } from '@/modules/circulacao/devolver.service'
-import { ErroDeDominio } from '@/core/errors'
+import {
+  listarPrateleiraDeSeparados,
+  resumoDoDiaNoBalcao,
+  type DependenciasDoPainelDoBalcao,
+  type TipoDeMovimento,
+} from '@/modules/circulacao/painel-do-balcao.service'
+import { conferirExemplarNoBalcao } from '@/modules/circulacao/exemplar-do-balcao.service'
+import { ErroDeDominio, SemPermissaoError } from '@/core/errors'
+import { formatarDataUtc, formatarDiaUtc, formatarHoraDaEscola } from './trilha'
 import type { Bloqueio } from '@/modules/circulacao/bloqueios'
-import type { EstadoDeConservacao } from '@/modules/acervo/exemplares.service'
+import type { LocalizacaoDoExemplar } from '@/modules/circulacao/exemplar-do-balcao.service'
+import type { Principal } from '@/core/auth/principal'
+import type { EstadoDeConservacao, SituacaoDoExemplar } from '@/modules/acervo/exemplares.service'
+
+/**
+ * Quantas linhas do dia a trilha recebe.
+ *
+ * A tira é um CORTE, e quem diz quantos atendimentos houve são os
+ * contadores do resumo — que o serviço tira das listas completas. A tela
+ * confessa o corte com `fraseDoCorte`; contar as linhas da tira
+ * transformaria "27 devoluções" em "8".
+ */
+const LINHAS_DA_TIRA = 20
+
+/** Um livro que o leitor está com ele agora, já escrito para a tela. */
+export interface LivroNaFichaDaTela {
+  emprestimoId: string
+  titulo: string
+  tombo: string
+  /** dd/mm — a data prevista de devolução deste livro. */
+  previstaPara: string
+  atrasado: boolean
+  /** Zero quando está em dia. Nunca negativo. */
+  diasDeAtraso: number
+}
 
 export interface LeitorDaTela {
   id: string
@@ -15,8 +47,21 @@ export interface LeitorDaTela {
   matricula: string
   turma: string | null
   bloqueios: Bloqueio[]
-  emprestimosAtivos: number
   limiteDaSerie: number
+  /** Quantos dias a série deste leitor leva o livro. */
+  prazoDaSerieEmDias: number
+  /** dd/mm/aaaa — a data que a operadora lê em voz alta antes de confirmar. */
+  devolucaoPrevistaSeEmprestarHoje: string
+  /**
+   * Os livros em mãos, do vencimento mais próximo para o mais distante.
+   *
+   * Repare que NÃO existe um campo com a quantidade ao lado desta lista.
+   * O "2 de 3" da ficha e da trilha é `emMaos.length` — a mesma lista que
+   * a tela imprime. Um contador vindo por outro campo poderia discordar
+   * do que a operadora conta com o dedo, e discordando os dois perdem a
+   * credibilidade de uma vez.
+   */
+  emMaos: LivroNaFichaDaTela[]
 }
 
 export type RespostaDoLeitor = { ok: true; leitor: LeitorDaTela } | { ok: false; erro: string }
@@ -45,8 +90,23 @@ export async function buscarLeitorAction(matricula: string): Promise<RespostaDoL
           matricula: leitor.matricula,
           turma: leitor.turma,
           bloqueios: leitor.bloqueios,
-          emprestimosAtivos: leitor.emprestimosAtivos,
           limiteDaSerie: leitor.limiteDaSerie,
+          prazoDaSerieEmDias: leitor.prazoDaSerieEmDias,
+          // A data sai do MESMO cálculo que o empréstimo usa para gravar,
+          // calendário de dias não letivos incluído. Uma segunda fórmula
+          // na tela faria a operadora prometer uma data e o sistema
+          // gravar outra.
+          devolucaoPrevistaSeEmprestarHoje: formatarDataUtc(
+            leitor.devolucaoPrevistaSeEmprestarHoje,
+          ),
+          emMaos: leitor.emMaos.map((livro) => ({
+            emprestimoId: livro.emprestimoId,
+            titulo: livro.tituloDaObra,
+            tombo: livro.tombo,
+            previstaPara: formatarDiaUtc(livro.previstaPara),
+            atrasado: livro.atrasado,
+            diasDeAtraso: livro.diasDeAtraso,
+          })),
         },
       }
     })
@@ -92,7 +152,7 @@ export async function emprestarAction(entrada: {
       return {
         ok: true as const,
         tombo,
-        previstaPara: formatarData(emprestimo.previstaPara),
+        previstaPara: formatarDataUtc(emprestimo.previstaPara),
         forcado: emprestimo.liberacaoForcada,
       }
     })
@@ -144,13 +204,13 @@ export async function devolverAction(entrada: {
         leitor: resultado.nomeDoLeitor,
         diasDeAtraso: resultado.diasDeAtraso,
         suspensaoAte: resultado.suspensaoAplicada
-          ? formatarData(resultado.suspensaoAplicada.ate)
+          ? formatarDataUtc(resultado.suspensaoAplicada.ate)
           : null,
         // A tela avisa que o exemplar foi separado e até quando o próximo
         // da fila tem para buscá-lo. Sem esse aviso a operadora devolve o
         // livro à estante e a fila nunca anda.
         separadoAte: resultado.reservaSeparada
-          ? formatarData(resultado.reservaSeparada.retirarAte)
+          ? formatarDataUtc(resultado.reservaSeparada.retirarAte)
           : null,
       }
     })
@@ -160,9 +220,215 @@ export async function devolverAction(entrada: {
   }
 }
 
-/** dd/mm/aaaa — como a escola escreve, não como o ISO escreve. */
-function formatarData(data: Date): string {
-  const dia = String(data.getUTCDate()).padStart(2, '0')
-  const mes = String(data.getUTCMonth() + 1).padStart(2, '0')
-  return `${dia}/${mes}/${data.getUTCFullYear()}`
+/** Uma linha da tira "Últimos do balcão". */
+export interface MovimentoNaTira {
+  /** Chave de render: o mesmo empréstimo aparece uma vez por tipo. */
+  chave: string
+  tipo: TipoDeMovimento
+  /** hh:mm no fuso da escola — o relógio que a operadora tem na parede. */
+  hora: string
+  leitor: string
+  turma: string | null
+  titulo: string
+  tombo: string
+  /** `null` na retirada; 0 quando a devolução voltou em dia. */
+  diasDeAtraso: number | null
+}
+
+/** Um exemplar guardado atrás do balcão, esperando quem reservou. */
+export interface SeparadoNaTira {
+  reservaId: string
+  titulo: string
+  tombo: string
+  leitor: string
+  turma: string | null
+  localizacao: string | null
+  /** dd/mm — o prazo de retirada. */
+  retirarAte: string
+  venceHoje: boolean
+  vencido: boolean
+  diasParaRetirar: number
+}
+
+/**
+ * A prateleira, ou a recusa explicada.
+ *
+ * `listarPrateleiraDeSeparados` exige `reserva:gerenciar`, e o resumo do
+ * dia exige emprestar OU devolver. Um papel montado à mão com uma
+ * permissão e não a outra existe — e nesse caso a trilha inteira ficaria
+ * vazia se a recusa derrubasse a consulta do dia junto. Então a recusa
+ * vira um caso da tela, com a frase que a operadora entende, em vez de
+ * um painel em branco sem motivo.
+ */
+export type PrateleiraNaTrilha =
+  | { permitida: true; itens: SeparadoNaTira[] }
+  | { permitida: false; motivo: string }
+
+export interface PainelDoBalcaoNaTela {
+  /** Empréstimos entregues hoje. Conta o DIA, não a tira. */
+  atendidosHoje: number
+  devolvidosHoje: number
+  movimentos: MovimentoNaTira[]
+  prateleira: PrateleiraNaTrilha
+}
+
+export type RespostaDoPainel =
+  | { ok: true; painel: PainelDoBalcaoNaTela }
+  | { ok: false; erro: string }
+
+/**
+ * A trilha lateral inteira, numa chamada só.
+ *
+ * Uma chamada e um único `hoje`: com dois instantes, o contador poderia
+ * dizer "27 devoluções" de um dia e a tira mostrar linhas de outro,
+ * exatamente na virada da meia-noite da escola.
+ */
+export async function carregarPainelAction(): Promise<RespostaDoPainel> {
+  try {
+    return await comStaffNoTenant(async (principal) => {
+      const hoje = new Date()
+      const deps = dependenciasDaCirculacao()
+
+      const [resumo, prateleira] = await Promise.all([
+        resumoDoDiaNoBalcao(principal, { hoje, limite: LINHAS_DA_TIRA }, deps),
+        prateleiraOuRecusa(principal, hoje, deps),
+      ])
+
+      return {
+        ok: true as const,
+        painel: {
+          atendidosHoje: resumo.atendidosHoje,
+          devolvidosHoje: resumo.devolvidosHoje,
+          movimentos: resumo.movimentos.map((movimento) => ({
+            chave: `${movimento.emprestimoId}-${movimento.tipo}`,
+            tipo: movimento.tipo,
+            hora: formatarHoraDaEscola(movimento.quando),
+            leitor: movimento.nomeDoLeitor,
+            turma: movimento.turma,
+            titulo: movimento.tituloDaObra,
+            tombo: movimento.tombo,
+            diasDeAtraso: movimento.diasDeAtraso,
+          })),
+          prateleira,
+        },
+      }
+    })
+  } catch (erro) {
+    if (erro instanceof ErroDeDominio) return { ok: false, erro: erro.message }
+    throw erro
+  }
+}
+
+/**
+ * A prateleira, tolerando SÓ a recusa de permissão.
+ *
+ * O `catch` é estreito de propósito: qualquer outra falha sobe e a trilha
+ * mostra o erro. Engolir tudo aqui faria a prateleira parecer vazia — ou
+ * seja, "nenhum exemplar separado" — num dia em que o banco caiu, e a
+ * operadora devolveria à estante livro que era de quem reservou.
+ */
+async function prateleiraOuRecusa(
+  principal: Principal,
+  hoje: Date,
+  deps: DependenciasDoPainelDoBalcao,
+): Promise<PrateleiraNaTrilha> {
+  try {
+    const separados = await listarPrateleiraDeSeparados(principal, hoje, deps)
+
+    return {
+      permitida: true,
+      itens: separados.map((item) => ({
+        reservaId: item.reservaId,
+        titulo: item.tituloDaObra,
+        tombo: item.tombo,
+        leitor: item.nomeDoLeitor,
+        turma: item.turma,
+        localizacao: item.localizacao,
+        retirarAte: formatarDiaUtc(item.retirarAte),
+        venceHoje: item.venceHoje,
+        vencido: item.vencido,
+        diasParaRetirar: item.diasParaRetirar,
+      })),
+    }
+  } catch (erro) {
+    if (erro instanceof SemPermissaoError) {
+      return {
+        permitida: false,
+        motivo:
+          'Seu acesso não inclui a fila de reservas, então a prateleira de separados ' +
+          'não aparece aqui. As devoluções do dia continuam abaixo.',
+      }
+    }
+    throw erro
+  }
+}
+
+/** O exemplar bipado, para a operadora confirmar que pegou o livro certo. */
+export interface ExemplarConferido {
+  tombo: string
+  titulo: string
+  /** Na ordem em que foram catalogados. Vazio quando a obra não tem autor. */
+  autores: string[]
+  situacao: SituacaoDoExemplar
+  /**
+   * Os quatro campos, não uma frase montada: quem sabe se escreve
+   * "estante 3 · prateleira 2" ou só "3" é a tela.
+   */
+  localizacao: LocalizacaoDoExemplar | null
+  proximoDaFila: {
+    nome: string
+    turma: string | null
+    posicao: number
+    /** Verdadeiro quando é ESTE exemplar que está guardado para ele. */
+    jaSeparadoParaEle: boolean
+  } | null
+}
+
+export type RespostaDaConferencia =
+  | { ok: true; exemplar: ExemplarConferido }
+  | { ok: false; erro: string }
+
+/**
+ * Confere o tombo bipado ANTES de confirmar o empréstimo.
+ *
+ * Só leitura, e é por isso que ela pode acontecer enquanto a operadora
+ * digita: o tombo sozinho não confirma nada, e bipar o exemplar errado só
+ * se descobre na devolução — quando o livro certo já está com outra
+ * pessoa.
+ */
+export async function conferirTomboAction(tombo: string): Promise<RespostaDaConferencia> {
+  try {
+    return await comStaffNoTenant(async (principal) => {
+      const conferencia = await conferirExemplarNoBalcao(
+        principal,
+        tombo,
+        dependenciasDaCirculacao(),
+      )
+
+      const { exemplar, proximoDaFila } = conferencia
+
+      return {
+        ok: true as const,
+        exemplar: {
+          tombo: exemplar.tombo,
+          titulo: exemplar.tituloDaObra,
+          autores: exemplar.autores,
+          situacao: exemplar.situacao,
+          localizacao: exemplar.localizacao,
+          proximoDaFila:
+            proximoDaFila === null
+              ? null
+              : {
+                  nome: proximoDaFila.nomeDoLeitor,
+                  turma: proximoDaFila.turma,
+                  posicao: proximoDaFila.posicao,
+                  jaSeparadoParaEle: proximoDaFila.jaSeparadoParaEle,
+                },
+        },
+      }
+    })
+  } catch (erro) {
+    if (erro instanceof ErroDeDominio) return { ok: false, erro: erro.message }
+    throw erro
+  }
 }
