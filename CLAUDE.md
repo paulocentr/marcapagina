@@ -12,23 +12,35 @@ acoplado ao código)
 
 **Fundação (m-0), Acervo (m-1) e Circulação (m-2) estão completos e em `main`.**
 
-Gate completo medido na árvore de `90d9b06`, exit code conferido um a um, em
+Gate completo medido na árvore de `main`, exit code conferido um a um, em
 máquina local com Postgres em Docker:
 
 | gate | resultado |
 |---|---|
 | `lint` | exit 0 |
 | `typecheck` | exit 0 |
-| `test:unit` | 37 arquivos, **810 testes** |
-| `test:integration` | 23 arquivos, **201 testes** |
+| `test:unit` | 44 arquivos, **1048 testes** |
+| `test:integration` | 27 arquivos, **246 testes** |
 | `test:e2e` | **17 testes** |
 | `build` | exit 0 |
 | `docker build` | exit 0 |
 
-**Nada foi implantado, e isso não mudou.** Não há remote no repositório, então o
-CI do GitHub Actions **nunca executou uma vez** — o workflow está escrito e
-versionado, e nenhuma execução foi observada. Não existe projeto na Vercel nem
-banco Neon. Card: TASK-031.
+**O código está no GitHub e o CI roda de verdade:**
+https://github.com/paulocentr/marcapagina (público, conta `paulocentr`).
+
+O workflow estava escrito e versionado há dias sem nunca ter executado; agora
+executa a cada push e passa verde, com `lint · typecheck · unit · migrate ·
+integration · build · playwright · e2e · docker build`. O CI sobe o próprio
+Postgres e usa segredos descartáveis — não depende de nada configurado no
+GitHub.
+
+**O E2E passou a rodar no CI nesta rodada, e reprovou de primeira.** Verde nesta
+máquina, vermelho lá: era teste frágil (ver a armadilha do route announcer
+abaixo). É o primeiro retorno concreto de publicar.
+
+**Ainda NÃO existe Vercel nem Neon.** Os dois travam num login interativo que só
+o Paulo pode completar: `npx vercel login` e `npx neonctl auth`. Depois disso o
+resto é automatizável. Card: TASK-031.
 
 **Circulação (m-2) COMPLETA — as 10 tarefas**
 (`docs/superpowers/plans/2026-09-10-circulacao.md`).
@@ -102,6 +114,16 @@ o serviço**.
   falhava mudava a cada rodada, e dirigido à mão funcionava. Dois gates travam
   isso hoje (`<Link>` para Route Handler, e `/sair` sem GET). Se for pôr tela de
   confirmação, ela é uma `page.tsx` com form POST, nunca um GET que já desloga.
+
+- **O route announcer do Next duplica o texto do `<h1>`.** Já morde pela terceira
+  vez, então está aqui: o Next monta um `<div role="alert"
+  id="__next-route-announcer__">` em toda página e o enche com o texto do `<h1>`.
+  Consequências: `getByRole('alert')` solto casa com ele e com o seu aviso, e
+  `getByText` de qualquer coisa que esteja no `<h1>` casa com dois elementos e
+  viola o strict mode do Playwright. **A convenção do projeto é procurar dentro
+  de `<main>`** — ou do `<form>`, ou da `<nav>`, o que delimitar a intenção.
+  Pior detalhe: localmente a asserção às vezes corre antes de o announcer ser
+  preenchido e PASSA. Foi verde aqui e vermelho no CI.
 
 ### Garantias provadas por MUTAÇÃO — se mexer nelas, refaça a mutação
 
