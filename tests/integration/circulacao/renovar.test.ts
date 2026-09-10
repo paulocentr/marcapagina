@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { prisma } from '@/core/db/client'
 import { executarComTenant } from '@/core/tenant/context'
 import { dependenciasDeRenovacao } from '@/modules/circulacao/circulacao.deps'
+import { emprestimosEmCursoRepository } from '@/modules/circulacao/emprestimos-em-curso.repository'
 import {
   renovar,
   EmprestimoInexistenteError,
@@ -207,6 +208,42 @@ describe('renovar contra banco', () => {
     await expect(
       naEscolaA(() => renovar(BALCAO, { emprestimoId: emprestimoA, hoje: HOJE }, deps)),
     ).rejects.toBeInstanceOf(BloqueiosDoLeitorError)
+  })
+
+  it('a trava do UPDATE segura a devolução que chega no meio do caminho', async () => {
+    // O serviço lê o empréstimo em aberto e depois escreve. Entre uma
+    // coisa e outra, o balcão pode receber o livro enquanto o aluno
+    // renova pelo portal — e aí o UPDATE não pode acertar nada, senão o
+    // livro fica emprestado para sempre, de volta na estante.
+    //
+    // Chamada direta ao repositório de propósito: a trava mora no WHERE
+    // dele, e passar pelo serviço testaria a checagem anterior, não esta.
+    await prisma.emprestimo.update({
+      where: { id: emprestimoA },
+      data: { devolvidaEm: new Date('2026-09-09T14:00:00Z') },
+    })
+
+    const linhas = await naEscolaA(() =>
+      emprestimosEmCursoRepository.registrarRenovacao(emprestimoA, new Date(Date.UTC(2026, 9, 8))),
+    )
+
+    expect(linhas).toBe(0)
+    const intacto = await prisma.emprestimo.findUniqueOrThrow({ where: { id: emprestimoA } })
+    expect(intacto.previstaPara).toEqual(VENCE_EM_24)
+    expect(intacto.renovacoes).toBe(0)
+  })
+
+  it('com o empréstimo em aberto, o mesmo UPDATE acerta e conta', async () => {
+    // Guarda contra falso verde: sem este, um WHERE que não casasse
+    // NUNCA deixaria o teste acima passar por engano.
+    const linhas = await naEscolaA(() =>
+      emprestimosEmCursoRepository.registrarRenovacao(emprestimoA, new Date(Date.UTC(2026, 9, 8))),
+    )
+
+    expect(linhas).toBe(1)
+    expect(
+      (await prisma.emprestimo.findUniqueOrThrow({ where: { id: emprestimoA } })).renovacoes,
+    ).toBe(1)
   })
 
   it('não renova empréstimo da escola vizinha', async () => {
