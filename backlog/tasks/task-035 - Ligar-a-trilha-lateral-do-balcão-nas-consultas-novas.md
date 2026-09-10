@@ -4,9 +4,11 @@ title: Ligar a trilha lateral do balcão nas consultas novas
 status: Done
 assignee: []
 created_date: '2026-09-10 19:42'
+updated_date: '2026-09-10 21:59'
 labels:
   - circulacao
   - frontend
+  - merged
 milestone: m-2
 dependencies: []
 priority: high

@@ -1,13 +1,14 @@
 ---
 id: TASK-020
 title: 'Portal do aluno (PWA, mobile-first)'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 02:03'
+updated_date: '2026-09-10 21:59'
 labels:
   - portal
   - frontend
+  - merged
 milestone: m-3
 dependencies: []
 documentation:

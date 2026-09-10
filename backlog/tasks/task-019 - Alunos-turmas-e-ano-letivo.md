@@ -4,7 +4,7 @@ title: 'Alunos, turmas e ano letivo'
 status: In Progress
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 21:31'
+updated_date: '2026-09-10 21:59'
 labels:
   - leitores
   - backend
@@ -90,4 +90,6 @@ Cinco proteções confirmadas por MUTAÇÃO (quebrar e ver o teste reprovar):
 - A busca de aluno **não ignora acento**: `Aluno` não tem coluna
   normalizada como `Obra.tituloNormalizado`, e criar uma exigiria migração.
   Está dito na tela em vez de prometido e falso.
+
+PARCIAL. Alunos, turmas e ano letivo entregues em 810f9c7, com tela. Ficou de FORA e continua neste card: UsuarioTurma (professor<->turma, que TASK-021 precisa) e a retenção/anonimização de aluno desligado exigida pelo LGPD.
 <!-- SECTION:NOTES:END -->

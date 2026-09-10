@@ -4,12 +4,13 @@ title: 'Painel do Leitor: relatórios com exportação CSV e PDF'
 status: Done
 assignee: []
 created_date: '2026-09-10 01:56'
-updated_date: '2026-09-10 21:42'
+updated_date: '2026-09-10 21:59'
 labels:
   - relatorios
   - backend
   - frontend
   - pdf
+  - merged
 milestone: m-4
 dependencies: []
 documentation:

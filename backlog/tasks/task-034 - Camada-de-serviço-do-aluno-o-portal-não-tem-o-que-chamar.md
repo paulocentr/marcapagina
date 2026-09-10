@@ -1,13 +1,15 @@
 ---
 id: TASK-034
 title: 'Camada de serviço do aluno: o portal não tem o que chamar'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-09-10 19:18'
+updated_date: '2026-09-10 21:59'
 labels:
   - portal
   - backend
   - auth
+  - merged
 milestone: m-3
 dependencies: []
 priority: high
