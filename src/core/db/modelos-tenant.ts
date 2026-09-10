@@ -25,6 +25,8 @@ export const MODELOS_ESCOPADOS_POR_TENANT = new Set<string>([
   'Emprestimo',
   'Reserva',
   'Penalidade',
+  'RodadaCarrinho',
+  'PedidoCarrinho',
 ])
 
 export const MODELOS_FORA_DO_TENANT = new Set<string>([

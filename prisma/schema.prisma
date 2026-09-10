@@ -36,6 +36,8 @@ model Escola {
   emprestimos              Emprestimo[]
   reservas                 Reserva[]
   penalidades              Penalidade[]
+  rodadasDoCarrinho        RodadaCarrinho[]
+  pedidosDoCarrinho        PedidoCarrinho[]
 }
 
 // ─── Acesso ────────────────────────────────────────────────────────────
@@ -110,8 +112,9 @@ model Turma {
   turno       String
 
   escola    Escola    @relation(fields: [escolaId], references: [id])
-  anoLetivo AnoLetivo @relation(fields: [anoLetivoId], references: [id])
+  anoLetivo AnoLetivo        @relation(fields: [anoLetivoId], references: [id])
   alunos    Aluno[]
+  rodadas   RodadaCarrinho[]
 
   @@unique([escolaId, anoLetivoId, nome])
   @@index([escolaId])
@@ -135,6 +138,7 @@ model Aluno {
   emprestimos Emprestimo[]
   reservas    Reserva[]
   penalidades Penalidade[]
+  pedidos     PedidoCarrinho[]
 
   @@unique([escolaId, matricula])
   @@index([escolaId])
@@ -278,6 +282,7 @@ model Obra {
   autores    ObraAutor[]
   exemplares Exemplar[]
   reservas   Reserva[]
+  pedidos    PedidoCarrinho[]
 
   @@index([escolaId])
   @@index([escolaId, isbn])
@@ -317,6 +322,7 @@ model Exemplar {
   itensDeInventario InventarioItem[]
   emprestimos       Emprestimo[]
   reservas          Reserva[]
+  rodadas           RodadaCarrinhoExemplar[]
 
   @@unique([escolaId, tombo])
   @@index([escolaId])
@@ -528,4 +534,72 @@ model Penalidade {
 
   @@index([escolaId])
   @@index([escolaId, alunoId, fim])
+}
+
+// ─── Carrinho da Leitura (spec §4.4, §5.6) ─────────────────────────────
+// Carrinho FÍSICO ITINERANTE que circula pelas salas — não é wishlist
+// (decisão 1 do projeto).
+enum StatusDaRodada {
+  PLANEJADA
+  REALIZADA
+  CANCELADA
+}
+
+enum StatusDoPedido {
+  PENDENTE
+  ATENDIDO
+  RECUSADO
+  SUGERIDO_COMPRA
+}
+
+model RodadaCarrinho {
+  id          String         @id @default(cuid())
+  escolaId    String
+  turmaId     String
+  data        DateTime       @db.Date
+  responsavelId   String
+  responsavelNome String
+  observacao  String?
+  status      StatusDaRodada @default(PLANEJADA)
+
+  escola     Escola                   @relation(fields: [escolaId], references: [id])
+  turma      Turma                    @relation(fields: [turmaId], references: [id])
+  exemplares RodadaCarrinhoExemplar[]
+
+  @@index([escolaId])
+  @@index([escolaId, turmaId, data])
+}
+
+model RodadaCarrinhoExemplar {
+  rodadaId   String
+  exemplarId String
+
+  rodada   RodadaCarrinho @relation(fields: [rodadaId], references: [id], onDelete: Cascade)
+  exemplar Exemplar       @relation(fields: [exemplarId], references: [id], onDelete: Restrict)
+
+  @@id([rodadaId, exemplarId])
+}
+
+model PedidoCarrinho {
+  id       String @id @default(cuid())
+  escolaId String
+  alunoId  String
+  // Obra do acervo OU título livre. O título livre é o que transforma o
+  // pedido em lista de sugestão de compra com contagem de demanda — o
+  // argumento que a coordenação leva à direção para pedir verba.
+  obraId      String?
+  tituloLivre String?
+  // Normalizado para agrupar a demanda: "o pequeno principe" e
+  // "O Pequeno Príncipe" são o mesmo pedido de compra.
+  tituloLivreNormalizado String?
+  criadoEm    DateTime       @default(now())
+  status      StatusDoPedido @default(PENDENTE)
+
+  escola Escola @relation(fields: [escolaId], references: [id])
+  aluno  Aluno  @relation(fields: [alunoId], references: [id])
+  obra   Obra?  @relation(fields: [obraId], references: [id])
+
+  @@index([escolaId])
+  @@index([escolaId, status])
+  @@index([escolaId, tituloLivreNormalizado])
 }
