@@ -1,56 +1,92 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState } from 'react'
+import type { ReactElement } from 'react'
+import { Botao } from '@/components/ui/botao'
+import { CampoComRotulo } from '@/components/ui/campo'
+import { Cartao } from '@/components/ui/cartao'
+import { Faixa } from '@/components/ui/faixa'
+import { Logotipo } from '@/components/ui/icones'
+import { nomeDoProduto } from '@/core/produto'
 import { entrarComoAluno, type EstadoDoFormulario } from './actions'
 
 const INICIAL: EstadoDoFormulario = { erro: null }
 
-export default function PaginaDeLoginAluno() {
+export default function PaginaDeLoginAluno(): ReactElement {
   const [estado, acao, pendente] = useActionState(entrarComoAluno, INICIAL)
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Marca-Página</h1>
-        <p className="text-sm text-neutral-600">Biblioteca da escola</p>
+    // Celular primeiro: é onde o aluno abre o portal. Os dois campos e o
+    // botão são de 52px e 44px, acima do alvo mínimo de toque.
+    <main className="mx-auto flex min-h-screen w-full max-w-[420px] flex-col justify-center gap-6 px-5 py-10">
+      <div className="flex items-center gap-2.5">
+        <Logotipo tamanho={30} />
+        <span className="font-serif text-[22px] font-bold tracking-[-0.02em] text-tinta">
+          {nomeDoProduto()}
+        </span>
       </div>
 
-      <form action={acao} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Matrícula</span>
-          <input
+      <Cartao className="flex flex-col gap-5">
+        <div>
+          <h1 className="font-serif text-[22px] font-semibold text-tinta">Entrar na biblioteca</h1>
+          <p className="mt-[3px] text-[13.5px] text-tinta-2">
+            Use a sua matrícula e a sua data de nascimento.
+          </p>
+        </div>
+
+        <form action={acao} className="flex flex-col gap-4">
+          {/*
+            Variante de bipagem nos dois: matrícula e data são números que
+            se digitam olhando para um papel, e em mono de 19px o aluno
+            confere dígito a dígito o que acabou de teclar.
+
+            `autoComplete` assimétrico de propósito. A matrícula é o
+            identificador e o navegador guardá-la poupa digitação a cada
+            entrada; a data de nascimento é a METADE SECRETA do par
+            (decisão 3 da spec), e deixar o navegador de um aparelho
+            compartilhado guardá-la transformaria o portal do colega em
+            dois toques. A variante de bipagem já entrega `off` sozinha —
+            aqui só a matrícula abre exceção.
+          */}
+          <CampoComRotulo
+            id="matricula"
+            rotulo="Matrícula"
+            variante="bipagem"
             name="matricula"
             required
             inputMode="numeric"
             autoComplete="username"
-            className="rounded border border-neutral-300 px-3 py-2 text-lg"
           />
-        </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Data de nascimento</span>
-          <input
+          <CampoComRotulo
+            id="dataNascimento"
+            rotulo="Data de nascimento"
+            variante="bipagem"
             name="dataNascimento"
             type="date"
             required
-            className="rounded border border-neutral-300 px-3 py-2 text-lg"
           />
-        </label>
 
-        {estado.erro && (
-          <p role="alert" className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
-            {estado.erro}
-          </p>
-        )}
+          {/*
+            Genérica de propósito: não diz se a matrícula existe. Sem isso,
+            o formulário responderia "quem estuda aqui?" a quem
+            experimentasse números em sequência.
+          */}
+          {estado.erro !== null && <Faixa tom="erro">{estado.erro}</Faixa>}
 
-        <button
-          type="submit"
-          disabled={pendente}
-          className="rounded bg-neutral-900 px-4 py-3 text-lg text-white disabled:opacity-60"
-        >
-          {pendente ? 'Entrando…' : 'Entrar'}
-        </button>
-      </form>
+          <Botao type="submit" tamanho="grande" disabled={pendente} className="w-full">
+            {pendente ? 'Entrando…' : 'Entrar'}
+          </Botao>
+        </form>
+      </Cartao>
+
+      <p className="text-center text-[13px] text-tinta-2">
+        É da equipe da escola?{' '}
+        <Link href="/entrar" className="font-semibold">
+          entrar com e-mail e senha
+        </Link>
+      </p>
     </main>
   )
 }
